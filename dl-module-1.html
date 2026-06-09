@@ -443,7 +443,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v6';
+const CACHE_VERSION = '2026-06-09-v7';
 const MODULE_ID    = 'dl_m1';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -477,8 +477,8 @@ const SECTION_DATA = [
       heading: 'The ideal approach',
       html: `
         <p class="prose">Ananya does three things before trusting the model:</p>
-        <p class="prose"><strong>1. Standardise the features.</strong> She scales spend, logins, tickets, and utilisation to comparable ranges so no single feature dominates the distance calculation.</p>
-        <p class="prose"><strong>2. Choose k by validation, not by feel.</strong> She holds out 20% of accounts, sweeps k over a range of odd values, and picks the k that maximises validation accuracy — landing on a moderate value that balances noise-sensitivity against over-smoothing.</p>
+        <p class="prose"><strong>1. Standardise the features.</strong> She scales spend, logins, tickets, and utilisation to comparable ranges so no single feature dominates the distance calculation. She standardises each attribute — subtracting its average and dividing by its spread — so spend (once ranging into the thousands) and seat utilisation (0 to 1) both end up on a common scale centred near 0. For example, an account spending ₹45,000 against an average of ₹30,000 becomes roughly +1.5, while 0.9 seat utilisation against an average of 0.5 also becomes roughly +1.5 — now the two contribute equally to "how similar are these accounts?", instead of spend's raw size swamping everything.</p>
+        <p class="prose"><strong>2. Choose k by validation, not by feel.</strong> She sets aside 20% of the accounts as a validation set the model never learns from, so their known lost/retained outcomes can fairly judge each setting. She then tries many values of k — using odd numbers so a majority vote can't tie — and keeps whichever scores best on that held-out 20%. For example: k=1 just copies the single nearest account, so one odd neighbour flips the call (too noise-sensitive); k=500 averages over so many accounts that genuine at-risk signals get blurred away (over-smoothing). The sweep might land on k=15 — enough neighbours to be stable, few enough to stay meaningful.</p>
         <p class="prose"><strong>3. Report held-out performance.</strong> She quotes accuracy on the held-out set, never on the training data.</p>
         <div class="callout callout-good"><strong>The result:</strong> an at-risk flag whose reported accuracy reflects how it will behave on unseen accounts, with a defensible justification for both the scaling and the choice of k.</div>`
     },
