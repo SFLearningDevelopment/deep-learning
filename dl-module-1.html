@@ -443,7 +443,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v3';
+const CACHE_VERSION = '2026-06-09-v4';
 const MODULE_ID    = 'dl_m1';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -469,9 +469,9 @@ const SECTION_DATA = [
     scenario: {
       heading: 'The scenario',
       html: `
-        <p class="prose"><strong>Ananya</strong>, an SF data analyst, is asked to build a quick churn flag for a SaaS client. She has 8,000 labelled accounts (churned / retained) described by spend, login frequency, ticket count, and seat utilisation. The client wants something explainable and fast to stand up — no heavy training pipeline.</p>
-        <p class="prose">k-NN is a reasonable first choice: it is intuitive ("accounts that look like ones that churned, churn") and needs no training step. But Ananya's features are on wildly different scales, and she has to choose k. Her decisions here determine whether the flag is trustworthy or quietly broken.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> k-NN <em>always</em> produces an answer, even when it is meaningless. A churn flag that looks reasonable in a demo can fail silently in production if scale and k are mishandled — and nobody sees an error message.</div>`
+        <p class="prose"><strong>Ananya</strong>, an SF data analyst, is asked to build a quick at-risk-customer flag for a SaaS client. She has 8,000 labelled accounts (lost / retained) described by spend, login frequency, ticket count, and seat utilisation. The client wants something explainable and fast to stand up — no heavy training pipeline.</p>
+        <p class="prose">k-NN is a reasonable first choice: it is intuitive ("accounts similar to ones that were lost tend to be lost too") and needs no training step. But Ananya's features are on wildly different scales, and she has to choose k. Her decisions here determine whether the flag is trustworthy or quietly broken.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> k-NN <em>always</em> produces an answer, even when it is meaningless. An at-risk flag that looks reasonable in a demo can fail silently in production if scale and k are mishandled — and nobody sees an error message.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
@@ -480,12 +480,12 @@ const SECTION_DATA = [
         <p class="prose"><strong>1. Standardise the features.</strong> She scales spend, logins, tickets, and utilisation to comparable ranges so no single feature dominates the distance calculation.</p>
         <p class="prose"><strong>2. Choose k by validation, not by feel.</strong> She holds out 20% of accounts, sweeps k over a range of odd values, and picks the k that maximises validation accuracy — landing on a moderate value that balances noise-sensitivity against over-smoothing.</p>
         <p class="prose"><strong>3. Report held-out performance.</strong> She quotes accuracy on the held-out set, never on the training data.</p>
-        <div class="callout callout-good"><strong>The result:</strong> a churn flag whose reported accuracy reflects how it will behave on unseen accounts, with a defensible justification for both the scaling and the choice of k.</div>`
+        <div class="callout callout-good"><strong>The result:</strong> an at-risk flag whose reported accuracy reflects how it will behave on unseen accounts, with a defensible justification for both the scaling and the choice of k.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Skipping feature scaling.</strong> Running k-NN on raw features lets the widest-range feature (spend) dictate every neighbour. The other three features barely matter, and the flag effectively becomes "high spenders vs low spenders" regardless of the real churn signal.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Skipping feature scaling.</strong> Running k-NN on raw features lets the widest-range feature (spend) dictate every neighbour. The other three features barely matter, and the flag effectively becomes "high spenders vs low spenders" regardless of the real at-risk signal.</div>
         <div class="callout callout-bad"><strong>Anti-pattern 2 — Setting k=1 and trusting training accuracy.</strong> With k=1 every training point is its own nearest neighbour, so training accuracy is always ~100%. Reporting that number as if it meant something hides severe overfitting.</div>
         <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring prediction cost at scale.</strong> Naive k-NN compares each query against the whole stored set. Shipping it for millions of real-time lookups without a spatial index turns a demo-fast model into a production bottleneck.</div>`
     }
