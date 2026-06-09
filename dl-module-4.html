@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 4 — Convolutional Neural Networks · Deep Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@300;400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#eef2f7; --bg2:#ffffff; --bg3:#f0f4f9; --border:#d0dae8;
+    --text:#1a2332; --text-dim:#4a5568; --text-dimmer:#8fa3bc;
+    --blue:#1a6eb5; --blue-light:#e8f1fb; --blue-mid:#b8d0ed; --blue-dark:#0f4a7a;
+    --pm:#1a6eb5; --pm-light:#e8f1fb; --pm-mid:#b8d0ed; --pm-dark:#0f4a7a;
+    --coral:#c0392b; --coral-light:#fdf0ee; --coral-mid:#f0b8b2;
+    --green:#1a6b3a; --green-light:#e8f5ed; --green-mid:#a3d4b8;
+    --amber:#92600a; --amber-light:#fdf3e3;
+    --code-bg:#1e2433; --code-text:#cdd6f4; --radius:12px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Merriweather Sans',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+
+  .topnav { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 32px; height:52px; display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:var(--text-dim); }
+  .topnav a { color:var(--pm); text-decoration:none; }
+  .topnav a:hover { text-decoration:underline; }
+  .sep { opacity:.4; }
+
+  /* Module header band */
+  .module-band { background:var(--bg2); border-bottom:1px solid var(--border); padding:24px 40px; }
+  .module-eyebrow { font-size:13px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--blue); margin-bottom:6px; }
+  .module-title { font-size:26px; font-weight:700; color:var(--text); }
+  .module-progress { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:10px; }
+
+  /* Section pills */
+  .section-pills-wrap { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 40px; overflow-x:auto; }
+  .section-pills { display:flex; gap:0; }
+  .section-pill {
+    display:flex; align-items:center; gap:8px; padding:14px 18px;
+    font-size:15px; font-weight:700; color:var(--text-dimmer);
+    border-bottom:2px solid transparent; cursor:pointer; background:none; border-top:none; border-left:none; border-right:none;
+    white-space:nowrap; transition:color .15s; font-family:'Merriweather Sans',sans-serif;
+  }
+  .section-pill .pnum {
+    width:26px; height:26px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    font-family:'Source Code Pro',monospace; flex-shrink:0; transition:all .15s;
+  }
+  .section-pill.active { color:var(--blue); border-bottom-color:var(--blue); }
+  .section-pill.active .pnum { background:var(--blue); border-color:var(--blue); color:#fff; }
+  .section-pill.done .pnum { background:var(--green); border-color:var(--green); color:#fff; }
+
+  .main { max-width:1100px; margin:0 auto; padding:32px; }
+
+  /* Section panel */
+  .section-panel { display:none; }
+  .section-panel.active { display:block; }
+
+  /* Tab row (within a section) */
+  .tabs-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius) var(--radius) 0 0; padding:0 8px; overflow-x:auto; }
+  .tabs { display:flex; gap:0; }
+  .tab-btn {
+    display:flex; align-items:center; gap:8px; padding:14px 16px;
+    font-size:14.5px; font-weight:700; color:var(--text-dimmer);
+    border-bottom:2px solid transparent; cursor:pointer; background:none; border-top:none; border-left:none; border-right:none;
+    white-space:nowrap; transition:color .15s; font-family:'Merriweather Sans',sans-serif;
+  }
+  .tab-btn .num { width:24px; height:24px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; font-family:'Source Code Pro',monospace; flex-shrink:0; transition:all .15s; }
+  .tab-btn.active { color:var(--blue); border-bottom-color:var(--blue); }
+  .tab-btn.active .num { background:var(--blue); border-color:var(--blue); color:#fff; }
+
+  .tab-body { background:var(--bg2); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); padding:32px; }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  .tab-label { font-size:13px; font-family:'Source Code Pro',monospace; font-weight:700; color:var(--blue); letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+  .tab-heading { font-size:23px; font-weight:700; margin-bottom:18px; }
+
+  .prose { font-size:16.5px; color:var(--text-dim); line-height:1.85; margin-bottom:18px; }
+  .prose strong { color:var(--text); font-weight:600; }
+
+  .callout { border-left:3px solid var(--blue); background:var(--blue-light); padding:14px 18px; border-radius:0 8px 8px 0; margin:18px 0; font-size:14.5px; line-height:1.7; color:var(--text-dim); }
+  .callout-warn { border-left-color:var(--amber); background:var(--amber-light); }
+  .callout-bad  { border-left-color:var(--coral); background:var(--coral-light); }
+  .callout-good { border-left-color:var(--green); background:var(--green-light); }
+  .callout strong { color:var(--text); }
+
+  .example-block { background:var(--bg3); border:1.5px solid var(--border); border-radius:var(--radius); padding:18px 22px; margin:18px 0; font-size:15.5px; line-height:1.8; color:var(--text-dim); }
+  .example-block .ex-label { font-size:12px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px; }
+
+  .divider { height:1px; background:var(--border); margin:26px 0; }
+  .tab-nav-row { display:flex; justify-content:space-between; margin-top:24px; }
+  .continue-btn { padding:11px 22px; background:var(--blue); color:#fff; border:none; border-radius:8px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:'Merriweather Sans',sans-serif; transition:background .15s; }
+  .continue-btn:hover { background:var(--blue-dark); }
+  .ghost-btn { padding:11px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .ghost-btn:hover { background:var(--bg3); }
+  .ghost-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* Assessment */
+  .assessment-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .assessment-sub { font-size:14.5px; color:var(--text-dim); line-height:1.7; margin-bottom:22px; }
+  .question-block { margin-bottom:26px; padding-bottom:22px; border-bottom:1px solid var(--border); }
+  .question-block:last-of-type { border-bottom:none; }
+  .q-num { font-size:11px; font-family:'Source Code Pro',monospace; color:var(--blue); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; font-weight:600; }
+  .q-text { font-size:15.5px; font-weight:600; color:var(--text); line-height:1.5; margin-bottom:14px; }
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-radius:8px; border:1.5px solid var(--border); cursor:pointer; font-size:14.5px; color:var(--text-dim); line-height:1.5; transition:border-color .15s, background .15s; }
+  .option:hover { border-color:var(--blue-mid); background:var(--blue-light); }
+  .option input[type="radio"] { margin-top:3px; flex-shrink:0; accent-color:var(--blue); }
+  .submit-btn { margin-top:18px; padding:12px 28px; background:var(--blue); color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .submit-btn:disabled { background:var(--border); color:var(--text-dimmer); cursor:not-allowed; }
+  .submit-btn:not(:disabled):hover { background:var(--blue-dark); }
+  .submit-note { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:8px; }
+  .submitted-wrap { text-align:center; padding:16px 0; }
+  .submitted-icon { font-size:34px; color:var(--green); margin-bottom:6px; }
+  .submitted-title { font-size:17px; font-weight:700; color:var(--green); margin-bottom:8px; }
+  .submitted-body { font-size:14.5px; color:var(--text-dim); line-height:1.7; }
+
+  /* Module complete bar */
+  .complete-bar { display:flex; align-items:center; gap:12px; padding:14px 20px; border-radius:8px; margin:24px 0 8px; font-size:14px; font-family:'Source Code Pro',monospace; font-weight:600; border:1.5px solid var(--border); background:var(--bg3); color:var(--text-dimmer); transition:all .2s; }
+  .complete-bar.disabled { opacity:.7; }
+  .complete-bar.ready { background:var(--blue-light); border-color:var(--blue-mid); border-left:3px solid var(--blue); color:var(--blue-dark); cursor:pointer; }
+  .complete-bar.done { background:var(--green-light); border-color:var(--green-mid); border-left:3px solid var(--green); color:var(--green); }
+  .complete-bar input[type="checkbox"] { width:18px; height:18px; accent-color:var(--green); }
+  .redo-btn { display:none; margin-left:16px; padding:8px 18px; background:var(--bg2); color:var(--coral); border:1.5px solid var(--coral-mid); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .redo-btn:hover { background:var(--coral-light); }
+  .redo-btn.visible { display:inline-block; }
+  .hidden { display:none !important; }
+
+  .bottom-nav { display:flex; justify-content:space-between; padding:28px 0 0; border-top:1px solid var(--border); margin-top:32px; }
+  .nav-btn { padding:12px 20px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; font-family:'Merriweather Sans',sans-serif; background:var(--blue); color:#fff; border:none; }
+  .nav-btn:hover { background:var(--blue-dark); }
+  .nav-btn.back { background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); }
+
+  footer { text-align:center; padding:26px 32px; font-size:11px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); border-top:1px solid var(--border); line-height:1.7; }
+  footer .attrib { display:block; margin-top:6px; opacity:.85; font-style:italic; }
+
+  /* Auth */
+  .auth-overlay { position:fixed; inset:0; background:rgba(15,30,60,.7); display:flex; align-items:center; justify-content:center; z-index:9999; backdrop-filter:blur(4px); }
+  .auth-overlay.hidden { display:none; }
+  .auth-box { background:#fff; border-radius:16px; padding:48px 40px; max-width:420px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+  .auth-logo { font-size:32px; margin-bottom:16px; }
+  .auth-title { font-size:22px; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .auth-sub { font-size:15px; color:var(--text-dim); line-height:1.6; margin-bottom:28px; }
+  .auth-google-btn { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:14px 20px; border-radius:8px; background:var(--blue); color:#fff; border:none; font-size:16px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; transition:background .15s; }
+  .auth-google-btn:hover { background:var(--blue-dark); }
+  .auth-google-btn svg { width:20px; height:20px; flex-shrink:0; }
+  .auth-error { font-size:13px; color:var(--coral); margin-top:12px; font-family:'Source Code Pro',monospace; }
+  .auth-user-bar { background:var(--blue-light); border-bottom:1px solid var(--blue-mid); padding:8px 32px; font-size:13px; font-family:'Source Code Pro',monospace; color:var(--blue-dark); display:flex; align-items:center; justify-content:space-between; }
+  .auth-user-bar.hidden { display:none; }
+  .auth-signout { background:var(--blue); color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:700; font-family:'Merriweather Sans',sans-serif; padding:8px 18px; text-decoration:none; }
+
+  @media(max-width:640px) { .topnav,.main,.module-band { padding-left:18px; padding-right:18px; } .section-pills-wrap { padding-left:14px; } .tab-body { padding:22px 18px; } }
+</style>
+</head>
+<body>
+
+<!-- Auth overlay -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">🧠</div>
+    <div class="auth-title">Deep Learning</div>
+    <div class="auth-sub">Sign in with your SourceFuse Google account to access the course and save your progress.</div>
+    <button class="auth-google-btn" id="googleSignInBtn">
+      <svg viewBox="0 0 48 48"><path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="auth-error hidden" id="authError"></div>
+  </div>
+</div>
+
+<div class="auth-user-bar hidden" id="authUserBar">
+  <span id="authUserEmail"></span>
+  <button class="auth-signout" id="authSignOutBtn">Sign out</button>
+</div>
+
+<nav class="topnav">
+  <a href="deep-learning-dashboard.html">Back to course dashboard</a>
+  <span class="sep">/</span>
+  <span>Module 4</span>
+  <span class="sep">/</span>
+  <span>Convolutional neural networks</span>
+</nav>
+
+<div class="module-band">
+  <div class="module-eyebrow">Module 4 of 5</div>
+  <div class="module-title">Convolutional Neural Networks</div>
+  <div class="module-progress" id="moduleProgress">0 of 5 sections complete</div>
+</div>
+
+<div class="section-pills-wrap">
+  <div class="section-pills" id="sectionPills">
+    <button class="section-pill active" data-sec="1" onclick="showSection(1)"><span class="pnum">1</span> Pooling &amp; unpooling</button>
+    <button class="section-pill" data-sec="2" onclick="showSection(2)"><span class="pnum">2</span> Digit classification</button>
+    <button class="section-pill" data-sec="3" onclick="showSection(3)"><span class="pnum">3</span> Network architectures</button>
+    <button class="section-pill" data-sec="4" onclick="showSection(4)"><span class="pnum">4</span> Model zoos</button>
+    <button class="section-pill" data-sec="5" onclick="showSection(5)"><span class="pnum">5</span> Visualizing weights &amp; activations</button>
+    <button class="section-pill" data-sec="6" onclick="showSection(6)"><span class="pnum">6</span> Adversarial examples</button>
+    <button class="section-pill" data-sec="7" onclick="showSection(7)"><span class="pnum">7</span> Self-supervised learning</button>
+  </div>
+</div>
+
+<div class="main" id="sectionsRoot">
+  <!-- Sections injected by JS from SECTION_DATA -->
+</div>
+
+<div class="main" style="padding-top:0;">
+  <div class="bottom-nav">
+    <a class="nav-btn back" href="dl-module-3.html">← Module 3 — Deep neural networks</a>
+    <a class="nav-btn" href="dl-module-5.html">Module 5 — More complex models →</a>
+  </div>
+</div>
+
+<footer>
+  Deep Learning · SourceFuse L&amp;D · Leads to the SF Certified Deep Learning Practitioner certification
+  <span class="attrib">Topic structure adapted from R. Szeliski, “Computer Vision: Algorithms and Applications” (2nd ed.), Chapter 5. Instructional scenarios and explanations are original content.</span>
+</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const _FB_CONFIG = {
+  apiKey: "AIzaSyC-I-IOCq2fCwa471fsD5xOn6SYQSBDp7Q",
+  authDomain: "sfcertification-grafana.firebaseapp.com",
+  projectId: "sfcertification-grafana",
+  storageBucket: "sfcertification-grafana.firebasestorage.app",
+  messagingSenderId: "227322696511",
+  appId: "1:227322696511:web:12e7ced7dd3d45fa06798a"
+};
+if (!window._fbApp) { window._fbApp = firebase.initializeApp(_FB_CONFIG); }
+const _auth = firebase.auth(window._fbApp);
+const _provider = new firebase.auth.GoogleAuthProvider();
+_provider.setCustomParameters({ hd: 'sourcefuse.com' });
+
+window.dlLearnerKey = function(sectionId) {
+  const uid = window._learnerUid || 'anon';
+  return 'dl_learner_' + uid + '_' + MODULE_ID + '_' + sectionId;
+};
+
+function showOverlay()   { document.getElementById('authOverlay')?.classList.remove('hidden'); }
+function hideOverlay()   { document.getElementById('authOverlay')?.classList.add('hidden'); }
+function showUserBar(email) {
+  const bar = document.getElementById('authUserBar');
+  const em  = document.getElementById('authUserEmail');
+  if (bar) bar.classList.remove('hidden');
+  if (em)  em.textContent = 'Welcome, ' + email;
+}
+
+_auth.onAuthStateChanged(function(user) {
+  if (user) {
+    const email = user.email || '';
+    if (!email.endsWith('@sourcefuse.com')) {
+      const errEl = document.getElementById('authError');
+      if (errEl) { errEl.textContent = 'Please use your @sourcefuse.com account.'; errEl.classList.remove('hidden'); }
+      _auth.signOut();
+      showOverlay();
+      return;
+    }
+    window._learnerUid   = user.uid;
+    window._learnerEmail = email;
+    hideOverlay();
+    showUserBar(email);
+    document.dispatchEvent(new Event('learnerReady'));
+  } else {
+    window._learnerUid   = null;
+    window._learnerEmail = null;
+    showOverlay();
+  }
+});
+
+document.getElementById('googleSignInBtn')?.addEventListener('click', function() {
+  _auth.signInWithPopup(_provider).catch(function(err) {
+    const el = document.getElementById('authError');
+    if (el) { el.textContent = err.message; el.classList.remove('hidden'); }
+  });
+});
+document.getElementById('authSignOutBtn')?.addEventListener('click', function() { _auth.signOut(); });
+</script>
+
+<!-- Question bank -->
+<script src="deep-learning-question-bank.js"></script>
+
+<script>
+const CACHE_VERSION = '2026-06-09-v1';
+const MODULE_ID    = 'dl_m4';
+const CP_COURSE_ID = 'deepLearning2026SFCert';
+const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
+const BANK_KEY     = 'm4';   // key into window.DL_QUESTION_BANK
+
+console.log('%c[Deep Learning] dl-module-4.html — v' + CACHE_VERSION, 'color:#1a6eb5;font-weight:bold;');
+
+// ── Section teaching content ────────────────────────────────────────────────
+// Each section: 4 teaching tabs (concept, scenario, ideal, avoid) + quiz tab.
+const SECTION_DATA = [
+  {
+    id: 's1', title: 'Pooling & unpooling',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>Pooling</strong> downsamples feature maps — <strong>max pooling</strong> keeps the strongest activation in each window, <strong>average pooling</strong> takes the mean. This shrinks spatial size (cutting computation) and grants small <strong>translation invariance</strong>, so a feature shifted by a few pixels still registers. But pooling is <em>lossy by design</em>: downsample too aggressively and you discard fine spatial detail.</p>
+        <p class="prose">In encoder–decoder models, <strong>unpooling/upsampling</strong> reverses this, restoring resolution to produce dense outputs like segmentation masks. Crucially, once detail is pooled away, naive upsampling cannot recover it — which is why architectures pass high-resolution detail forward through <strong>skip connections</strong>.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A U-Net encoder pools a 256×256 image down to 16×16 to capture context, then upsamples back to 256×256 for a pixel-wise mask. Skip connections feed the sharp early-layer features directly into the decoder, so edges in the output mask stay crisp instead of blurring.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Aditi</strong>, an SF vision engineer, builds a segmentation model to outline defects on manufactured parts. Her encoder pools aggressively to keep the model small, and her decoder upsamples with simple interpolation — no skip connections. The masks come out blurry and misaligned with the actual defect edges.</p>
+        <p class="prose">She assumes she needs a bigger model or more data. The real issue is architectural: she pooled away the very spatial detail the task depends on, and gave the decoder no way to recover it. Recognising that determines whether she fixes the architecture or wastes weeks scaling the wrong thing.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the model trains and produces plausible-looking masks — they're just systematically imprecise, and the cause is information thrown away early, not model capacity.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Add skip connections.</strong> Aditi adopts a U-Net-style design that passes high-resolution encoder features to the matching decoder stage, so fine detail guides the upsampling.</p>
+        <p class="prose"><strong>2. Pool proportionate to the task.</strong> She balances downsampling for context against the spatial precision segmentation requires, rather than pooling away detail for the sake of a smaller model.</p>
+        <p class="prose"><strong>3. Use learnable upsampling where appropriate.</strong> She uses transposed convolutions or learned upsampling instead of crude interpolation alone, letting the decoder reconstruct sharper boundaries.</p>
+        <div class="callout callout-good"><strong>The result:</strong> sharp, well-aligned defect masks — achieved by preserving and reusing spatial detail, not by brute-force scaling.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Aggressive pooling with no skip connections.</strong> Discarding spatial detail in the encoder and giving the decoder no high-resolution path produces blurry, misaligned dense outputs.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Crude upsampling to "undo" pooling.</strong> Simple interpolation cannot recover detail that pooling destroyed; the information is already gone.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Misdiagnosing blur as a capacity problem.</strong> Scaling the model or adding data won't fix an architecture that threw the needed detail away upstream.</div>`
+    }
+  },
+  {
+    id: 's2', title: 'Digit classification',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose">Handwritten-<strong>digit classification</strong> is the classic CNN application. CNNs suit it because <strong>convolutions exploit spatial locality and share weights</strong>: the same filter detects a stroke pattern anywhere in the image, giving position-tolerant features with far fewer parameters than a dense network. A final <strong>softmax</strong> turns the network's scores into a probability distribution over the ten digit classes.</p>
+        <p class="prose">Two disciplines make results trustworthy. A genuinely <strong>held-out test set</strong> estimates generalisation (training accuracy can be inflated by memorisation), and <strong>data augmentation</strong> (small rotations, shifts, scaling) expands effective variety — but augmentation must never let copies of the same image straddle the train/test split, or you leak information.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A small CNN reaches ~99% test accuracy on handwritten digits. Adding mild rotations and shifts during training makes it robust to the natural slant and position variation of real handwriting — provided the split was made by source image <em>before</em> augmenting, so no augmented twin appears in both sets.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Manish</strong> builds a digit classifier for a form-processing pipeline. He augments his dataset with rotations and shifts to boost robustness, shuffles everything together, then splits into train and test. He reports a dazzling 99.8% test accuracy — but in deployment the model stumbles.</p>
+        <p class="prose">The gap comes from <em>data leakage</em>: by augmenting before splitting, near-duplicate copies of the same source digit landed in both train and test. His test set was never truly unseen. Whether Manish spots this determines if he trusts a fake number or measures real generalisation.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the leak makes the headline metric look <em>better</em>, so nothing in the reported results signals a problem — it surfaces only in deployment.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Split by source image, then augment.</strong> Manish partitions the original images into train/test first, and only augments <em>within</em> the training set, so no augmented twin can cross the boundary.</p>
+        <p class="prose"><strong>2. Treat the test set as sacred.</strong> He never augments, tunes on, or peeks at the test set; it is touched once, at the end, for an honest estimate.</p>
+        <p class="prose"><strong>3. Validate against realistic data.</strong> He checks performance on genuinely fresh samples resembling deployment conditions, not just the held-out split.</p>
+        <div class="callout callout-good"><strong>The result:</strong> a reported accuracy that actually predicts deployment behaviour, because the evaluation data was truly unseen.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Augmenting before splitting.</strong> This leaks near-duplicate images across train and test, inflating the test score and producing a number that doesn't hold up.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Reporting training accuracy as success.</strong> Without a clean held-out set, accuracy can reflect memorisation rather than generalisation.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Tuning on the test set.</strong> Repeatedly adjusting the model against the test set quietly turns it into a second training set, erasing its value as an unbiased estimate.</div>`
+    }
+  },
+  {
+    id: 's3', title: 'Network architectures',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose">CNN <strong>architectures</strong> have evolved from shallow early designs toward much deeper networks — but depth only pays off with the right structure. Naively stacking layers in a <em>plain</em> network eventually <strong>degrades</strong> accuracy because optimisation gets harder. <strong>Residual connections</strong> (skip/identity paths, as in ResNet) fix this by giving gradients a direct route, making very deep networks trainable. Batch normalisation and well-designed blocks further stabilise training at depth.</p>
+        <p class="prose">In practice, the "best" architecture is not the biggest. Production imposes <strong>latency, memory, and energy</strong> constraints, so an efficient model that meets the accuracy bar is often the right engineering choice over a leaderboard-topping giant.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A 152-layer ResNet trains successfully because each residual block can learn a small adjustment on top of an identity mapping. The same depth in a plain network without skips would be far harder to optimise and might score <em>worse</em> than a shallower version.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Sana</strong> is tasked with an on-device image classifier for a mobile app. Under pressure to maximise accuracy, she picks the largest, highest-scoring architecture from a public leaderboard and fine-tunes it. Offline accuracy is superb — but on a mid-range phone it cannot run anywhere near real time, and the feature is unusable.</p>
+        <p class="prose">Sana optimised for the wrong objective. The model's benchmark accuracy was never the binding constraint; on-device latency and memory were. Whether she reframes the problem around deployment limits determines if the feature ships at all.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> by the metric she was watching (accuracy), she made the "best" choice — the failure only appears when the model meets the real hardware budget.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Define the deployment budget first.</strong> Sana establishes the target latency, memory, and power envelope for the phone before choosing an architecture.</p>
+        <p class="prose"><strong>2. Choose an efficient architecture that meets the accuracy bar within that budget.</strong> She selects a mobile-efficient design and verifies it clears the minimum accuracy needed for the feature — rather than maximising accuracy in the abstract.</p>
+        <p class="prose"><strong>3. Use residual/normalised designs for trainability.</strong> Where depth helps, she relies on residual connections and normalisation so the network actually trains well at that depth.</p>
+        <div class="callout callout-good"><strong>The result:</strong> a model that runs in real time on-device and is accurate enough for the task — the architecture chosen against the real constraints.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Choosing architecture by leaderboard accuracy alone.</strong> Ignoring latency, memory, and power yields a model that can't run in its target environment.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming deeper is always better.</strong> Plain networks degrade past a point; depth needs residuals/normalisation to help rather than hurt.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Deferring deployment constraints to the end.</strong> Treating latency/memory as an afterthought means discovering too late that the chosen model is unusable.</div>`
+    }
+  },
+  {
+    id: 's4', title: 'Model zoos',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose">A <strong>model zoo</strong> is a repository of <strong>pre-trained models</strong> you can download and reuse. They power <strong>transfer learning</strong>: instead of training from scratch, you take a model pre-trained on a large dataset and <strong>fine-tune</strong> it for your task. Because the pre-trained features already capture general structure, this works remarkably well even when your labelled data is limited.</p>
+        <p class="prose">Two cautions. Pre-trained models expect inputs matching their <strong>training preprocessing</strong> (normalisation, resolution) — mismatch silently degrades performance. And zoo weights carry <strong>licences, data provenance, and inherited biases</strong>; reusing them commercially without checking these creates legal and ethical risk.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A team with only 2,000 labelled medical images fine-tunes a network pre-trained on a million general images. The pre-trained edge/texture/shape features transfer, and the model reaches strong accuracy that training from scratch on 2,000 images never could — as long as inputs are preprocessed exactly as the base model expects.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Farhan</strong> grabs a high-performing pre-trained model from a public zoo and fine-tunes it on his company's sensitive customer images for a commercial product. He never checks the model's licence or what data it was originally trained on, and ships it.</p>
+        <p class="prose">Months later, legal flags that the model's licence forbids commercial use and its training data has contested provenance. The technical work was sound; the due-diligence gap is what creates exposure. Whether Farhan treats provenance and licensing as part of the engineering decision is the real issue.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> nothing in the model's accuracy or behaviour reveals the licensing/provenance problem — it's invisible until someone asks the legal question.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Check licence and provenance before use.</strong> Farhan verifies the model's licence permits his commercial use and reviews what data it was trained on, treating this as a gating step.</p>
+        <p class="prose"><strong>2. Match preprocessing to the base model.</strong> He feeds inputs with the exact normalisation and resolution the pre-trained model expects, avoiding silent degradation.</p>
+        <p class="prose"><strong>3. Assess inherited bias.</strong> He evaluates the fine-tuned model for biases that may have come from the base model's training data, especially given sensitive use.</p>
+        <div class="callout callout-good"><strong>The result:</strong> the benefits of transfer learning captured safely — strong performance from limited data, without legal, preprocessing, or bias surprises.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Ignoring licence and provenance.</strong> Shipping a zoo model commercially without checking its terms and data origin creates real legal and ethical risk.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Mismatched preprocessing.</strong> Feeding inputs scaled or sized differently from the base model's training quietly wrecks performance.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Assuming pre-trained means unbiased.</strong> Inherited biases from the base model's data can propagate; they must be assessed, not assumed away.</div>`
+    }
+  },
+  {
+    id: 's5', title: 'Visualizing weights & activations',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>Visualising</strong> a CNN's learned filters and activation maps reveals <em>what</em> the network responds to. Early layers typically learn low-level features — <strong>edges, colours, simple textures</strong> — while deeper layers compose these into increasingly complex, abstract patterns. <strong>Saliency</strong> and <strong>class-activation maps</strong> highlight which regions of an input most influenced a prediction.</p>
+        <p class="prose">The deeper value is diagnostic: a model can be highly accurate yet rely on <strong>spurious cues</strong> — backgrounds, watermarks, artefacts — being "right for the wrong reasons." Visualisation can expose this before such shortcuts break under distribution shift, which headline accuracy alone never would.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A classifier distinguishes wolves from huskies with high accuracy. Saliency maps reveal it's keying on <em>snow</em> in the background, not the animals. Accurate on the benchmark, useless in the field — a failure only visible by looking at what the model attends to.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Deepa</strong> ships a high-accuracy animal classifier after strong test-set numbers. Her team never visualised activations — accuracy was high, so why bother? In production, performance collapses on photos taken in different settings.</p>
+        <p class="prose">Post-hoc saliency maps show the model had been keying on grassy backgrounds, not the animals themselves. The benchmark hid a spurious shortcut. Whether Deepa builds interpretability checks into her pre-deployment process determines if this recurs on the next model.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the model's accuracy was genuinely high on the test set — the shortcut only fails when the spurious cue (grass) isn't present, i.e. under distribution shift.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Inspect activations and saliency before deployment.</strong> Deepa makes interpretability checks a standard pre-ship step, confirming the model attends to the actual subject, not the background.</p>
+        <p class="prose"><strong>2. Probe for spurious correlations.</strong> She tests on images where the suspected shortcut (e.g. background) is altered, to see if predictions wrongly depend on it.</p>
+        <p class="prose"><strong>3. Fix the data or model if a shortcut is found.</strong> She addresses biased backgrounds through augmentation or rebalancing so the model learns the intended features.</p>
+        <div class="callout callout-good"><strong>The result:</strong> a model verified to be right for the <em>right</em> reasons, far more likely to hold up under real-world distribution shift.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Trusting accuracy without inspecting attention.</strong> High test accuracy can mask reliance on spurious cues that visualisation would reveal.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Skipping interpretability before deployment.</strong> Treating visualisation as optional means shortcuts surface only after they fail in production.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring distribution shift.</strong> A model right for the wrong reasons works on the benchmark and breaks the moment the spurious cue disappears.</div>`
+    }
+  },
+  {
+    id: 's6', title: 'Adversarial examples',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose">An <strong>adversarial example</strong> is an input with a small, often <em>imperceptible</em> perturbation crafted to make a model misclassify it confidently. They matter because they show models can be fooled by inputs humans see as unchanged — a real <strong>security and safety risk</strong> for any system relying on the model's predictions.</p>
+        <p class="prose">Critically, <strong>clean accuracy does not imply robustness</strong>: a model can be highly accurate on normal data yet extremely fragile to crafted perturbations. <strong>Adversarial training</strong> — including adversarial examples during training — improves robustness, often at some cost to clean accuracy.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A stop-sign classifier is 99% accurate on clean images. An attacker adds a perturbation invisible to drivers, and the model reads the sign as "speed limit 80." The clean accuracy was real; it simply said nothing about resistance to a deliberate attack.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Gopal</strong> deploys a CNN as part of a security-sensitive access-control system, validating it only on clean-image accuracy, which is excellent. He treats the model as done. Later, attackers craft perturbed inputs that look normal to a human guard but reliably fool the model, defeating the system.</p>
+        <p class="prose">Gopal validated against the wrong threat model. For a security-critical system, clean accuracy is necessary but nowhere near sufficient. Whether he tests and hardens for adversarial robustness before deployment is what separates a secure system from an exploitable one.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> every standard metric looked great, because the danger isn't random error — it's a deliberate adversary the clean test set never represents.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Define the threat model.</strong> Gopal recognises that a security system faces adversaries and that clean accuracy alone is an inadequate validation.</p>
+        <p class="prose"><strong>2. Test adversarial robustness.</strong> He evaluates the model against known attack methods to measure how easily it can be fooled, before trusting it.</p>
+        <p class="prose"><strong>3. Harden the model.</strong> He applies defences such as adversarial training and adds system-level safeguards (e.g. secondary checks), accepting the trade-off against clean accuracy where security demands it.</p>
+        <div class="callout callout-good"><strong>The result:</strong> an access system evaluated and hardened against the adversaries it will actually face, rather than one that only looks safe on clean benchmarks.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Validating security systems on clean accuracy only.</strong> This ignores the entire adversarial threat model the system exists to withstand.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming clean accuracy implies robustness.</strong> The two are distinct; a strong clean score reveals nothing about resistance to perturbations.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Shipping without hardening.</strong> Deploying to a security-critical setting with no robustness testing or defences leaves a known, exploitable weakness.</div>`
+    }
+  },
+  {
+    id: 's7', title: 'Self-supervised learning',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>Self-supervised learning</strong> creates supervisory signals <em>from the data itself</em>, learning strong representations without manual labels. It does this through a <strong>pretext task</strong> — an auxiliary problem like predicting an image's rotation, filling in masked regions, or matching augmented views — whose solving forces the model to learn transferable structure.</p>
+        <p class="prose">This has become central to large-scale vision and language models: pre-train on <strong>vast unlabelled data</strong> via self-supervision, then <strong>fine-tune</strong> for downstream tasks with relatively little labelled data. The catch is design: a poorly chosen pretext task with a <strong>trivial shortcut</strong> teaches nothing useful and transfers badly.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A model is pre-trained to predict how much each image was rotated. To do that well it must learn what objects normally look like (sky up, faces upright). Those learned representations then fine-tune efficiently on a small labelled classification set — far better than training from scratch.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Ishan</strong> designs a self-supervised pretext task to pre-train an image encoder. His task can be solved by exploiting compression artefacts at image borders rather than by understanding image content. Pre-training "succeeds" — the pretext loss drops nicely — but downstream transfer to the real classification task is poor.</p>
+        <p class="prose">The model found a shortcut that satisfied the pretext task without learning meaningful features. Whether Ishan recognises that the pretext design is the problem, not the amount of data, decides if he fixes the task or chases dead ends.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the pretext task's own loss looks great, masking that the model learned a trivial trick instead of transferable structure.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Design pretext tasks that resist shortcuts.</strong> Ishan reworks the task so it cannot be solved by trivial artefacts (e.g. removing border cues, using stronger augmentations), forcing the model to engage with content.</p>
+        <p class="prose"><strong>2. Judge success by downstream transfer, not pretext loss.</strong> He measures the learned representations on the actual target task, treating that — not a low pretext loss — as the real signal of quality.</p>
+        <p class="prose"><strong>3. Use established self-supervised methods as a baseline.</strong> He compares against proven approaches (contrastive or masked-modelling methods) known to learn transferable features.</p>
+        <div class="callout callout-good"><strong>The result:</strong> a pretext task that compels genuine representation learning, yielding features that fine-tune well on the downstream task.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Pretext tasks with trivial shortcuts.</strong> If the task can be solved via artefacts or borders, the model learns the trick, not useful features, and transfer fails.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Judging by pretext loss alone.</strong> A low pretext loss can hide that nothing transferable was learned; downstream performance is the real measure.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Making the pretext task too easy.</strong> A task with no real difficulty gives the model no reason to learn meaningful structure.</div>`
+    }
+  }
+];
+
+// ── Build section panels from data + question bank ───────────────────────────
+function bankFor(sectionKey) {
+  try { return (window.DL_QUESTION_BANK[BANK_KEY] || {})[sectionKey] || []; }
+  catch(e) { return []; }
+}
+
+function buildSections() {
+  const root = document.getElementById('sectionsRoot');
+  SECTION_DATA.forEach(function(sec, idx) {
+    const secNum = idx + 1;
+    const questions = bankFor(sec.id);
+    const panel = document.createElement('section');
+    panel.className = 'section-panel' + (secNum === 1 ? ' active' : '');
+    panel.id = 'section-' + secNum;
+
+    const tabs = [
+      { key:'concept',  label:'Concept',  data:sec.concept  },
+      { key:'scenario', label:'Scenario', data:sec.scenario },
+      { key:'ideal',    label:'Ideal approach', data:sec.ideal },
+      { key:'avoid',    label:'What not to do',  data:sec.avoid }
+    ];
+
+    let tabsBtns = '';
+    tabs.forEach(function(t, ti) {
+      tabsBtns += '<button class="tab-btn' + (ti===0?' active':'') + '" onclick="showTab(' + secNum + ',' + (ti+1) + ')">'
+        + '<span class="num">' + (ti+1) + '</span> ' + t.label + '</button>';
+    });
+    tabsBtns += '<button class="tab-btn" onclick="showTab(' + secNum + ',5)"><span class="num">5</span> Check understanding</button>';
+
+    let panes = '';
+    tabs.forEach(function(t, ti) {
+      panes += '<div class="tab-pane' + (ti===0?' active':'') + '" id="pane-' + secNum + '-' + (ti+1) + '">'
+        + '<div class="tab-label">' + t.label + '</div>'
+        + '<div class="tab-heading">' + t.data.heading + '</div>'
+        + t.data.html
+        + '<div class="divider"></div>'
+        + '<div class="tab-nav-row"><span></span><button class="continue-btn" onclick="showTab(' + secNum + ',' + (ti+2) + ')">Continue →</button></div>'
+        + '</div>';
+    });
+
+    // Quiz pane
+    let qHtml = '';
+    questions.forEach(function(q, qi) {
+      let opts = '';
+      q.options.forEach(function(opt, oi) {
+        opts += '<label class="option"><input type="radio" name="s' + secNum + '_q' + (qi+1) + '" value="' + oi + '"> ' + opt + '</label>';
+      });
+      qHtml += '<div class="question-block">'
+        + '<div class="q-num">Question ' + (qi+1) + ' of ' + questions.length + '</div>'
+        + '<div class="q-text">' + q.q + '</div>'
+        + '<div class="options">' + opts + '</div>'
+        + '</div>';
+    });
+
+    panes += '<div class="tab-pane" id="pane-' + secNum + '-5">'
+      + '<div class="tab-label">Check understanding</div>'
+      + '<div class="tab-heading">Check your understanding</div>'
+      + '<div class="questions-wrap" id="questionsWrap-' + secNum + '">'
+      + '<p class="assessment-sub">Answer all ' + questions.length + ' questions to complete this section. Questions draw on all four tabs, including the “what not to do” practices. Your answers are saved.</p>'
+      + qHtml
+      + '<button class="submit-btn" id="submitBtn-' + secNum + '" disabled>Submit answers</button>'
+      + '<div class="submit-note" id="submitNote-' + secNum + '">Select an answer for each question to submit.</div>'
+      + '</div>'
+      + '<div class="submitted-wrap hidden" id="submittedWrap-' + secNum + '">'
+      + '<div class="submitted-icon">✓</div><div class="submitted-title">Section complete</div>'
+      + '<div class="submitted-body">Your answers have been recorded and this section is marked complete.</div>'
+      + '<button class="ghost-btn redo-btn" id="redoBtn-' + secNum + '" style="margin-top:14px;">&#x21BA; Redo section</button>'
+      + '</div>'
+      + '</div>';
+
+    panel.innerHTML = '<div class="tabs-wrap"><div class="tabs">' + tabsBtns + '</div></div>'
+      + '<div class="tab-body">' + panes + '</div>';
+    root.appendChild(panel);
+  });
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function showSection(n) {
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.section-pill').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + n)?.classList.add('active');
+  document.querySelector('.section-pill[data-sec="' + n + '"]')?.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showTab(sec, t) {
+  const panel = document.getElementById('section-' + sec);
+  if (!panel) return;
+  panel.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  panel.querySelector('#pane-' + sec + '-' + t)?.classList.add('active');
+  panel.querySelectorAll('.tab-btn')[t-1]?.classList.add('active');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+function loadSec(secNum) {
+  const k = window.dlLearnerKey('s' + secNum);
+  try { return JSON.parse(localStorage.getItem(k)) || {}; } catch(e) { return {}; }
+}
+function saveSec(secNum, s) {
+  const k = window.dlLearnerKey('s' + secNum);
+  localStorage.setItem(k, JSON.stringify(s));
+}
+function allSectionsDone() {
+  for (let i = 1; i <= SECTION_DATA.length; i++) {
+    if (!loadSec(i).complete) return false;
+  }
+  return true;
+}
+function updateModuleProgress() {
+  let done = 0;
+  for (let i = 1; i <= SECTION_DATA.length; i++) {
+    if (loadSec(i).complete) {
+      done++;
+      document.querySelector('.section-pill[data-sec="' + i + '"]')?.classList.add('done');
+    }
+  }
+  const el = document.getElementById('moduleProgress');
+  if (el) el.textContent = done + ' of ' + SECTION_DATA.length + ' sections complete';
+  if (done >= SECTION_DATA.length) cpWriteModuleComplete();
+}
+
+function wireSection(secNum) {
+  const questions = bankFor('s' + secNum);
+  const qCount = questions.length;
+  const submitBtn = document.getElementById('submitBtn-' + secNum);
+  const note = document.getElementById('submitNote-' + secNum);
+
+  function checkAll() {
+    let answered = 0;
+    for (let i = 1; i <= qCount; i++) {
+      if (document.querySelector('input[name="s' + secNum + '_q' + i + '"]:checked')) answered++;
+    }
+    const all = answered === qCount;
+    if (submitBtn) submitBtn.disabled = !all;
+    if (note) note.textContent = all ? 'Ready to submit.' : 'Select an answer for each question to submit.';
+  }
+
+  document.querySelectorAll('#questionsWrap-' + secNum + ' input[type="radio"]').forEach(function(r) {
+    r.addEventListener('change', checkAll);
+  });
+
+  function showSubmitted() {
+    document.getElementById('questionsWrap-' + secNum)?.classList.add('hidden');
+    document.getElementById('submittedWrap-' + secNum)?.classList.remove('hidden');
+  }
+
+  if (submitBtn) submitBtn.addEventListener('click', function() {
+    const answers = {};
+    for (let i = 1; i <= qCount; i++) {
+      const v = document.querySelector('input[name="s' + secNum + '_q' + i + '"]:checked')?.value;
+      answers['q' + i] = v != null ? parseInt(v, 10) : null;
+    }
+    const correct = {};
+    questions.forEach(function(q, qi) { correct['q' + (qi+1)] = q.correctIndex; });
+    let score = 0;
+    for (let i = 1; i <= qCount; i++) { if (answers['q'+i] === correct['q'+i]) score++; }
+
+    const s = loadSec(secNum);
+    s.sectionId   = 's' + secNum;
+    s.answers     = answers;
+    s.correct     = correct;
+    s.score       = score;
+    s.total       = qCount;
+    s.submittedAt = new Date().toISOString();
+    s.complete    = true;
+    saveSec(secNum, s);
+
+    showSubmitted();
+    document.querySelector('.section-pill[data-sec="' + secNum + '"]')?.classList.add('done');
+    updateModuleProgress();
+  });
+
+  const redo = document.getElementById('redoBtn-' + secNum);
+  if (redo) redo.addEventListener('click', function() {
+    const k = window.dlLearnerKey('s' + secNum);
+    localStorage.removeItem(k);
+    document.getElementById('questionsWrap-' + secNum)?.classList.remove('hidden');
+    document.getElementById('submittedWrap-' + secNum)?.classList.add('hidden');
+    document.querySelectorAll('#questionsWrap-' + secNum + ' input[type="radio"]').forEach(function(r){ r.checked = false; });
+    if (submitBtn) submitBtn.disabled = true;
+    if (note) note.textContent = 'Select an answer for each question to submit.';
+    document.querySelector('.section-pill[data-sec="' + secNum + '"]')?.classList.remove('done');
+    updateModuleProgress();
+  });
+
+  // Restore submitted state
+  if (loadSec(secNum).submittedAt) showSubmitted();
+}
+
+document.addEventListener('learnerReady', function() {
+  cpEnsureModuleStarted();
+  for (let i = 1; i <= SECTION_DATA.length; i++) wireSection(i);
+  updateModuleProgress();
+});
+
+// ── courseProgress (uid-keyed; module map) ───────────────────────────────────
+function cpNow() {
+  var d = new Date(); var pad = function(n){ return String(n).padStart(2,'0'); };
+  return { date: d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),
+           time: pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()), ms: d.getTime() };
+}
+function cpFmtDuration(ms) {
+  if (ms == null || ms < 0) return null;
+  var s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if (h > 0) return h+'h '+m+'m '+sec+'s';
+  if (m > 0) return m+'m '+sec+'s';
+  return sec+'s';
+}
+function cpDb() { return firebase.firestore(window._fbApp); }
+function cpDocRef() { return cpDb().collection('courseProgress').doc(window._learnerUid); }
+function cpReady() { return window._fbApp && window._learnerUid && window._learnerUid !== 'anon'; }
+
+function cpEnsureModuleStarted() {
+  if (!cpReady()) return;
+  var ref = cpDocRef();
+  ref.get().then(function(snap){
+    var data = snap.exists ? (snap.data() || {}) : {};
+    var course = (data.courses && data.courses[CP_COURSE_ID]) || {};
+    var mods = course.modules || {};
+    var t = cpNow();
+    var update = { email: window._learnerEmail || null, name: window._learnerEmail || null, courses: {} };
+    update.courses[CP_COURSE_ID] = { moduleInProgress: MODULE_ID, modules: {} };
+    if (!course.courseStartedOn) { update.courses[CP_COURSE_ID].courseStartedOn = t.date; update.courses[CP_COURSE_ID].courseStartedAt = t.time; }
+    if (!mods[MODULE_ID] || !mods[MODULE_ID].startedOn) {
+      update.courses[CP_COURSE_ID].modules[MODULE_ID] = { startedOn: t.date, startedAt: t.time };
+    }
+    ref.set(update, { merge: true }).catch(function(e){ console.warn('[courseProgress] start write failed:', e.message); });
+  }).catch(function(e){ console.warn('[courseProgress] start read failed:', e.message); });
+}
+
+function cpWriteModuleComplete() {
+  if (!cpReady()) return;
+  var ref = cpDocRef();
+  ref.get().then(function(snap){
+    var data = snap.exists ? (snap.data() || {}) : {};
+    var course = (data.courses && data.courses[CP_COURSE_ID]) || {};
+    var mods = course.modules || {};
+    if (mods[MODULE_ID] && mods[MODULE_ID].completedOn) return; // idempotent
+    var t = cpNow();
+    var startMs = null, mEntry = mods[MODULE_ID];
+    if (mEntry && mEntry.startedOn && mEntry.startedAt) startMs = new Date(mEntry.startedOn + 'T' + mEntry.startedAt).getTime();
+    var moduleTimeTaken = startMs != null ? cpFmtDuration(t.ms - startMs) : null;
+
+    var courseUpdate = { modules: {} };
+    courseUpdate.modules[MODULE_ID] = { completedOn: t.date, completedAt: t.time, timeTaken: moduleTimeTaken };
+    if (course.moduleInProgress === MODULE_ID) courseUpdate.moduleInProgress = null;
+
+    var completedCount = 0;
+    CP_MODULE_IDS.forEach(function(id){
+      if (id === MODULE_ID) { completedCount++; return; }
+      if (mods[id] && mods[id].completedOn) completedCount++;
+    });
+    if (completedCount >= CP_MODULE_IDS.length && !course.courseCompletedOn) {
+      courseUpdate.courseCompletedOn = t.date; courseUpdate.courseCompletedAt = t.time;
+      if (course.courseStartedOn && course.courseStartedAt) {
+        var cStart = new Date(course.courseStartedOn + 'T' + course.courseStartedAt).getTime();
+        courseUpdate.timeTaken = cpFmtDuration(t.ms - cStart);
+      }
+    }
+    var update = { email: window._learnerEmail || null, name: window._learnerEmail || null, courses: {} };
+    update.courses[CP_COURSE_ID] = courseUpdate;
+    ref.set(update, { merge: true }).catch(function(e){ console.warn('[courseProgress] complete write failed:', e.message); });
+  }).catch(function(e){ console.warn('[courseProgress] complete read failed:', e.message); });
+}
+
+// Cache busting on internal links
+(function() {
+  function addVersion(url) {
+    if (!url || url.startsWith('http') || url.startsWith('#') || url.startsWith('mailto')) return url;
+    if (!url.endsWith('.html') && !url.includes('.html?')) return url;
+    const sep = url.includes('?') ? '&' : '?';
+    if (url.includes('v=' + CACHE_VERSION)) return url;
+    return url + sep + 'v=' + CACHE_VERSION;
+  }
+  document.querySelectorAll('a[href]').forEach(a => { a.href = addVersion(a.getAttribute('href')); });
+})();
+
+// Build panels immediately (content is static; auth gates the overlay only)
+buildSections();
+</script>
+
+</body>
+</html>
