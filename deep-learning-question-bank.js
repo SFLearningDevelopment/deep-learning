@@ -1140,6 +1140,493 @@ window.DL_QUESTION_BANK = {
         difficulty: 'hard'
       }
     ]
+  },
+
+  // ============ MODULE 4: Convolutional Neural Networks (24% weight) ============
+  m4: {
+
+    // ---- 5.4.1 Pooling and unpooling ----
+    s1: [
+      {
+        id: 'dl-m4-s1-i1',
+        q: 'What is the main purpose of a pooling layer in a CNN?',
+        options: [
+          'To add learnable weights between convolutions',
+          'To downsample feature maps, reducing spatial size and adding small translation invariance',
+          'To increase the number of channels',
+          'To apply the loss function'
+        ],
+        correctIndex: 1,
+        explanation: 'Pooling (e.g. max pooling) reduces the spatial resolution of feature maps, cutting computation and giving the network tolerance to small shifts in the input.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s1-i2',
+        q: 'How does max pooling differ from average pooling?',
+        options: [
+          'Max pooling sums all values; average pooling multiplies them',
+          'Max pooling keeps the strongest activation in each window; average pooling takes the mean of the window',
+          'Max pooling has learnable weights; average pooling does not',
+          'They are identical in effect'
+        ],
+        correctIndex: 1,
+        explanation: 'Max pooling outputs the maximum activation in each region (emphasising strong features); average pooling outputs the mean (smoothing the response).',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s1-i3',
+        q: 'In an encoder–decoder architecture, what role does unpooling (or upsampling) play?',
+        options: [
+          'It removes feature maps to save memory',
+          'It increases spatial resolution to reconstruct larger outputs, reversing the downsampling done by pooling',
+          'It applies dropout',
+          'It computes the gradient'
+        ],
+        correctIndex: 1,
+        explanation: 'Unpooling/upsampling restores spatial resolution in the decoder, enabling dense outputs such as segmentation maps from a downsampled representation.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s1-i4',
+        q: 'True or False: Aggressive pooling that downsamples too quickly can discard fine spatial detail needed for the task.',
+        options: [
+          'False — pooling never loses useful information',
+          'True — overly aggressive downsampling throws away spatial detail that tasks like segmentation or small-object detection depend on',
+          'True — but only for average pooling',
+          'False — pooling only affects channels, not spatial detail'
+        ],
+        correctIndex: 1,
+        explanation: 'Pooling is lossy by design. Downsampling too fast destroys fine-grained spatial information, which hurts tasks that need precise localisation.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s1-i5',
+        q: 'A team building a segmentation model pools aggressively in the encoder but uses crude upsampling with no skip connections, and the output masks are blurry and misaligned. What is the "what not to do" lesson?',
+        options: [
+          'Pooling should never be used in segmentation',
+          'Aggressive downsampling discards spatial detail that crude upsampling cannot recover; skip connections (passing encoder detail to the decoder) are needed to preserve localisation',
+          'They should have removed the decoder entirely',
+          'Blurry masks are unavoidable in all CNNs'
+        ],
+        correctIndex: 1,
+        explanation: 'Once fine detail is pooled away, naive upsampling cannot restore it. Architectures like U-Net add skip connections so high-resolution encoder features guide the decoder, sharpening outputs.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.4.2 Application: Digit classification ----
+    s2: [
+      {
+        id: 'dl-m4-s2-i1',
+        q: 'Why are CNNs well suited to digit/image classification compared to fully connected networks?',
+        options: [
+          'They have no weights to train',
+          'Convolutions exploit spatial locality and share weights, capturing patterns regardless of position with far fewer parameters',
+          'They require no training data',
+          'They cannot overfit'
+        ],
+        correctIndex: 1,
+        explanation: 'Convolutional filters share weights across the image and respond to local patterns, giving translation-aware feature detection with dramatically fewer parameters than a dense network.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s2-i2',
+        q: 'In a digit classifier, what does the final softmax layer produce?',
+        options: [
+          'A single binary output',
+          'A probability distribution over the digit classes (0–9) that sums to one',
+          'The raw pixel values',
+          'The convolutional filters'
+        ],
+        correctIndex: 1,
+        explanation: 'Softmax converts the final scores into a normalised probability distribution across the classes, from which the highest-probability digit is chosen.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s2-i3',
+        q: 'Why is a held-out test set essential when reporting digit-classifier accuracy?',
+        options: [
+          'It speeds up training',
+          'It estimates generalisation to unseen data; accuracy on training data alone can be inflated by memorisation',
+          'It is required to compute the loss',
+          'It increases the number of classes'
+        ],
+        correctIndex: 1,
+        explanation: 'Only performance on data the model never trained on reflects real-world generalisation; training accuracy can be misleadingly high.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s2-i4',
+        q: 'True or False: Data augmentation (small rotations, shifts, scaling) can improve a digit classifier\'s robustness to input variation.',
+        options: [
+          'False — augmentation always corrupts the labels',
+          'True — label-preserving transformations expand effective training variety, helping the model generalise to natural variation',
+          'True — but only if the dataset is already huge',
+          'False — augmentation only slows training with no benefit'
+        ],
+        correctIndex: 1,
+        explanation: 'Augmenting with realistic, label-preserving transforms exposes the model to more variation, improving robustness and reducing overfitting.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s2-i5',
+        q: 'A team reports 99.8% accuracy on a digit model, but it fails in deployment. They had shuffled and split data such that augmented copies of the same images appeared in both train and test sets. What is the anti-pattern?',
+        options: [
+          'They used too much augmentation',
+          'Data leakage: near-duplicate (augmented) images crossing the train/test boundary inflated test accuracy, so the reported number did not reflect true generalisation',
+          'Digit classification cannot reach 99%',
+          'They should have trained on the test set too'
+        ],
+        correctIndex: 1,
+        explanation: 'Letting augmented versions of the same source image land in both splits leaks information; the test set is no longer truly unseen, inflating accuracy. Split by source image before augmenting.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.4.3 Network architectures ----
+    s3: [
+      {
+        id: 'dl-m4-s3-i1',
+        q: 'What problem do residual connections (as in ResNet) primarily address?',
+        options: [
+          'They reduce the number of classes',
+          'They ease training of very deep networks by letting gradients flow through skip (identity) paths, mitigating vanishing gradients',
+          'They remove the need for convolutions',
+          'They eliminate the loss function'
+        ],
+        correctIndex: 1,
+        explanation: 'Residual/skip connections add the input back to a block\'s output, giving gradients a direct path and making very deep networks trainable.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s3-i2',
+        q: 'What general trend distinguishes later CNN architectures from early ones like a basic LeNet?',
+        options: [
+          'They use fewer than three layers',
+          'They tend to be deeper and use design innovations (e.g. residuals, batch norm, better blocks) to train effectively at depth',
+          'They avoid convolutions entirely',
+          'They never use pooling'
+        ],
+        correctIndex: 1,
+        explanation: 'Architectural progress largely involved going deeper and adding mechanisms (residuals, normalisation, efficient blocks) that make deep CNNs trainable and accurate.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s3-i3',
+        q: 'Why might a smaller, efficient architecture be preferred over a huge one in production?',
+        options: [
+          'Smaller models are always more accurate',
+          'Latency, memory, and energy constraints often matter; an efficient model meeting accuracy needs can be the better engineering choice',
+          'Large models cannot be deployed at all',
+          'Smaller models never overfit'
+        ],
+        correctIndex: 1,
+        explanation: 'Production has real constraints (speed, memory, cost). The best architecture is the one that meets accuracy requirements within those limits, not necessarily the largest.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s3-i4',
+        q: 'True or False: Simply adding more layers to a plain (non-residual) CNN reliably improves accuracy without limit.',
+        options: [
+          'True — depth always helps',
+          'False — beyond a point, plain deep networks can become harder to train and may degrade; innovations like residuals were needed to benefit from extreme depth',
+          'True — but only past 1000 layers',
+          'False — depth never matters'
+        ],
+        correctIndex: 1,
+        explanation: 'Naively stacking layers in a plain network led to degradation (harder optimisation), which residual connections were introduced to overcome. Depth helps only with the right design.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s3-i5',
+        q: 'A team picks the largest, highest-accuracy architecture from a leaderboard for a mobile app, ignoring its latency and memory footprint; it cannot run in real time on-device. What is the "what not to do" lesson?',
+        options: [
+          'Leaderboard accuracy is the only thing that matters',
+          'Choosing an architecture solely by benchmark accuracy, ignoring deployment constraints (latency, memory, power), produces a model that is unusable in its target environment',
+          'They should have used an even larger model',
+          'Mobile apps cannot run CNNs'
+        ],
+        correctIndex: 1,
+        explanation: 'Top-of-leaderboard accuracy is irrelevant if the model cannot meet on-device latency/memory budgets. Architecture choice must weigh deployment constraints, not just accuracy.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.4.4 Model zoos ----
+    s4: [
+      {
+        id: 'dl-m4-s4-i1',
+        q: 'What is a "model zoo"?',
+        options: [
+          'A dataset of animal images',
+          'A collection of pre-trained models that can be downloaded and reused',
+          'A tool for drawing network diagrams',
+          'A type of loss function'
+        ],
+        correctIndex: 1,
+        explanation: 'A model zoo is a repository of pre-trained models (often with weights) that practitioners can reuse, fine-tune, or benchmark against.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s4-i2',
+        q: 'What is transfer learning in the context of using a pre-trained model?',
+        options: [
+          'Training a model entirely from scratch',
+          'Reusing a model pre-trained on a large dataset and adapting it (e.g. fine-tuning) to a new, often smaller, task',
+          'Copying the test set into the training set',
+          'Converting a model to another programming language'
+        ],
+        correctIndex: 1,
+        explanation: 'Transfer learning leverages features learned on a large dataset, fine-tuning them for a related task — valuable when task-specific data is limited.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s4-i3',
+        q: 'Why is transfer learning especially useful when you have limited labelled data?',
+        options: [
+          'It removes the need for any data',
+          'The pre-trained features already capture general structure, so the model needs far less task-specific data to perform well',
+          'It guarantees perfect accuracy',
+          'It only works with unlabelled data'
+        ],
+        correctIndex: 1,
+        explanation: 'A model pre-trained on a large corpus brings useful general-purpose features; adapting it needs much less labelled data than training from scratch.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s4-i4',
+        q: 'True or False: When reusing a pre-trained model, you must apply the same input preprocessing (e.g. normalisation) that the model was trained with.',
+        options: [
+          'False — preprocessing never matters for pre-trained models',
+          'True — feeding inputs preprocessed differently from training (wrong normalisation/size) can badly degrade a pre-trained model\'s performance',
+          'True — but only for the final layer',
+          'False — pre-trained models adapt to any input format automatically'
+        ],
+        correctIndex: 1,
+        explanation: 'Pre-trained models expect inputs matching their training preprocessing (scaling, mean/std, resolution). Mismatched preprocessing silently degrades results.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s4-i5',
+        q: 'A team downloads a pre-trained model and fine-tunes it on sensitive data, without checking its licence or training-data provenance, then ships it commercially. What is the anti-pattern?',
+        options: [
+          'Using pre-trained models is always prohibited',
+          'Ignoring licence terms, provenance, and potential embedded biases of a zoo model creates legal and ethical risk; due diligence on licence and data origin is required before commercial use',
+          'They should never fine-tune a model',
+          'Provenance is irrelevant for deep learning'
+        ],
+        correctIndex: 1,
+        explanation: 'Model-zoo weights carry licences, data-provenance questions, and inherited biases. Reusing them commercially without checking these creates legal/ethical exposure — verify before shipping.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.4.5 Visualizing weights and activations ----
+    s5: [
+      {
+        id: 'dl-m4-s5-i1',
+        q: 'Why do practitioners visualise the filters and activations of a CNN?',
+        options: [
+          'To make the model train faster',
+          'To gain insight into what features the network has learned and to help debug or interpret its behaviour',
+          'To reduce the number of parameters',
+          'To replace the loss function'
+        ],
+        correctIndex: 1,
+        explanation: 'Visualising learned filters and activation maps helps practitioners understand and debug what the network is responding to, aiding interpretation.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s5-i2',
+        q: 'What do early convolutional layers typically learn to detect?',
+        options: [
+          'Whole objects and faces',
+          'Low-level features such as edges, colours, and simple textures',
+          'The final class probabilities',
+          'The loss value'
+        ],
+        correctIndex: 1,
+        explanation: 'Early layers respond to simple, local patterns (edges, colours, textures); deeper layers compose these into increasingly complex, abstract features.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s5-i3',
+        q: 'What can a saliency or class-activation map reveal?',
+        options: [
+          'The exact training time',
+          'Which regions of an input most influenced the model\'s prediction',
+          'The number of layers in the network',
+          'The optimiser used'
+        ],
+        correctIndex: 1,
+        explanation: 'Saliency/CAM-style methods highlight the input regions that most affected a prediction, helping verify the model attends to sensible evidence.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s5-i4',
+        q: 'True or False: A model can achieve high accuracy yet rely on spurious cues, which visualisation can help expose.',
+        options: [
+          'False — high accuracy guarantees correct reasoning',
+          'True — a model may exploit background or artefact cues; activation/saliency visualisation can reveal it is "right for the wrong reasons"',
+          'True — but only for regression models',
+          'False — visualisation cannot show anything useful'
+        ],
+        correctIndex: 1,
+        explanation: 'High accuracy can mask reliance on spurious correlations (e.g. background, watermarks). Visualisation can expose that the model attends to the wrong evidence.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s5-i5',
+        q: 'A high-accuracy animal classifier is deployed; later, saliency maps show it keys on grassy backgrounds, not the animals. The team had never visualised activations before shipping. What is the "what not to do" lesson?',
+        options: [
+          'Visualisation is a waste of time if accuracy is high',
+          'Trusting headline accuracy without inspecting what the model attends to can hide reliance on spurious cues that break under distribution shift; interpretability checks belong before deployment',
+          'They should have used a larger test set only',
+          'Saliency maps are always misleading'
+        ],
+        correctIndex: 1,
+        explanation: 'A model right for the wrong reasons fails when the spurious cue disappears. Visualising activations/saliency before deployment surfaces such shortcuts that accuracy alone hides.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.4.6 Adversarial examples ----
+    s6: [
+      {
+        id: 'dl-m4-s6-i1',
+        q: 'What is an adversarial example?',
+        options: [
+          'A mislabelled training image',
+          'An input with a small, often imperceptible perturbation crafted to make the model misclassify it',
+          'A duplicate image in the dataset',
+          'A very large input image'
+        ],
+        correctIndex: 1,
+        explanation: 'Adversarial examples add tiny, deliberately chosen perturbations — often invisible to humans — that cause confident misclassification.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s6-i2',
+        q: 'Why are adversarial examples concerning for deployed models?',
+        options: [
+          'They make training faster',
+          'They reveal that models can be fooled by inputs humans see as unchanged, posing security and safety risks',
+          'They only affect training accuracy',
+          'They have no practical impact'
+        ],
+        correctIndex: 1,
+        explanation: 'If an attacker can craft inputs that look normal but fool the model, that is a real security/safety risk for systems relying on the model\'s predictions.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s6-i3',
+        q: 'What is adversarial training?',
+        options: [
+          'Training two humans to compete',
+          'Augmenting training with adversarial examples so the model learns to resist such perturbations',
+          'Training without any labels',
+          'Removing the adversarial examples from the dataset'
+        ],
+        correctIndex: 1,
+        explanation: 'Adversarial training includes adversarially perturbed inputs during training, improving robustness to such attacks (often at some cost to clean accuracy).',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s6-i4',
+        q: 'True or False: High accuracy on a clean test set guarantees a model is robust to adversarial perturbations.',
+        options: [
+          'True — clean accuracy implies robustness',
+          'False — a model can be highly accurate on clean data yet extremely fragile to small adversarial perturbations',
+          'True — but only for CNNs',
+          'False — clean accuracy and robustness are the same thing'
+        ],
+        correctIndex: 1,
+        explanation: 'Clean accuracy and adversarial robustness are distinct; strong clean performance says nothing about resistance to crafted perturbations.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s6-i5',
+        q: 'A team deploys a CNN for a security-sensitive access system, validating only on clean accuracy and never testing adversarial robustness. Attackers later fool it with perturbed inputs. What is the anti-pattern?',
+        options: [
+          'Adversarial attacks are impossible in practice',
+          'For security-sensitive systems, validating only on clean data ignores a known threat model; adversarial robustness must be tested and hardened before deployment',
+          'They should have used a smaller model',
+          'Clean accuracy is the only relevant metric'
+        ],
+        correctIndex: 1,
+        explanation: 'In adversarial settings, clean accuracy is insufficient. Threat modelling, robustness testing, and defences (e.g. adversarial training) are needed before trusting the model in security-critical use.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.4.7 Self-supervised learning ----
+    s7: [
+      {
+        id: 'dl-m4-s7-i1',
+        q: 'What characterises self-supervised learning?',
+        options: [
+          'It requires extensive human labelling',
+          'It creates supervisory signals from the data itself (via pretext tasks), learning representations without manual labels',
+          'It uses no data',
+          'It only works for regression'
+        ],
+        correctIndex: 1,
+        explanation: 'Self-supervised learning generates its own labels from the structure of unlabelled data (e.g. predicting masked or transformed parts), learning useful representations without manual annotation.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m4-s7-i2',
+        q: 'What is a "pretext task" in self-supervised learning?',
+        options: [
+          'The final task you care about',
+          'An auxiliary task (e.g. predicting rotation, filling in masked regions) used to learn representations that transfer to downstream tasks',
+          'A task for labelling data manually',
+          'A way to compute the loss on the test set'
+        ],
+        correctIndex: 1,
+        explanation: 'A pretext task is a self-generated problem (rotation prediction, masked reconstruction, contrastive matching) whose solving forces the model to learn transferable representations.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s7-i3',
+        q: 'Why has self-supervised learning become important for large-scale vision and language models?',
+        options: [
+          'It eliminates the need for any compute',
+          'It exploits vast amounts of unlabelled data to pre-train strong general representations, which are then fine-tuned with little labelled data',
+          'It guarantees no bias',
+          'It only works on tiny datasets'
+        ],
+        correctIndex: 1,
+        explanation: 'Self-supervision unlocks huge unlabelled corpora for pre-training, producing general representations that transfer well and need only modest labelled data downstream.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s7-i4',
+        q: 'True or False: Representations learned by self-supervised pre-training can be fine-tuned for downstream tasks with relatively little labelled data.',
+        options: [
+          'False — self-supervised features are never reusable',
+          'True — that transferability is a central benefit: pre-train on unlabelled data, then fine-tune on a small labelled set',
+          'True — but only for text, never images',
+          'False — fine-tuning requires more labels than training from scratch'
+        ],
+        correctIndex: 1,
+        explanation: 'The point of self-supervised pre-training is transferable representations that fine-tune efficiently on small labelled datasets — a major practical advantage.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m4-s7-i5',
+        q: 'A team designs a self-supervised pretext task whose shortcut solution ignores image content (e.g. exploiting compression artefacts), then is puzzled that downstream transfer is poor. What is the "what not to do" lesson?',
+        options: [
+          'Self-supervised learning never works',
+          'A poorly designed pretext task can be solved via trivial shortcuts that teach nothing useful; the pretext must force learning of meaningful, transferable structure',
+          'They should have used more labelled data only',
+          'Pretext tasks should always be as easy as possible'
+        ],
+        correctIndex: 1,
+        explanation: 'If a pretext task has a trivial shortcut (artefacts, borders), the model exploits it without learning useful features, so transfer fails. Pretext tasks must be designed to require genuine understanding.',
+        difficulty: 'hard'
+      }
+    ]
   }
 
 };
