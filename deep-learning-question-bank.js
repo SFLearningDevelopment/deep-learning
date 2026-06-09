@@ -373,6 +373,355 @@ window.DL_QUESTION_BANK = {
         difficulty: 'hard'
       }
     ]
+  },
+
+  // ============ MODULE 2: Unsupervised Learning (20% weight) ============
+  m2: {
+
+    // ---- 5.2.1 Clustering ----
+    s1: [
+      {
+        id: 'dl-m2-s1-i1',
+        q: 'What fundamentally distinguishes clustering from classification?',
+        options: [
+          'Clustering uses labelled data; classification does not',
+          'Clustering groups data without predefined labels; classification predicts known labels',
+          'Clustering is always faster than classification',
+          'Clustering can only handle two groups'
+        ],
+        correctIndex: 1,
+        explanation: 'Clustering is unsupervised — it discovers structure in unlabelled data. Classification is supervised and predicts predefined categories.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m2-s1-i2',
+        q: 'Why is choosing the number of clusters often the hardest part of clustering?',
+        options: [
+          'The algorithm refuses to run without it',
+          'There is usually no single ground-truth answer; the "right" number depends on the goal and the data structure',
+          'More clusters are always better',
+          'The number of clusters must equal the number of features'
+        ],
+        correctIndex: 1,
+        explanation: 'Unlike supervised accuracy, there is rarely one correct cluster count. Heuristics (elbow, silhouette) and domain goals guide the choice.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s1-i3',
+        q: 'How does hierarchical (agglomerative) clustering differ from a flat method like k-means?',
+        options: [
+          'It requires the number of clusters up front; k-means does not',
+          'It builds a tree of nested clusters (a dendrogram), letting you choose the granularity afterward',
+          'It can only cluster numeric data',
+          'It always produces exactly two clusters'
+        ],
+        correctIndex: 1,
+        explanation: 'Agglomerative clustering merges points bottom-up into a dendrogram, so the number of clusters can be decided after seeing the hierarchy, rather than fixed in advance.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s1-i4',
+        q: 'True or False: Clustering results are objective and independent of the distance metric and feature scaling chosen.',
+        options: [
+          'True — clustering always finds the same groups regardless of preprocessing',
+          'False — the metric and scaling strongly shape which points are considered similar, so they change the resulting clusters',
+          'True — but only for hierarchical clustering',
+          'False — only the number of clusters matters, not scaling'
+        ],
+        correctIndex: 1,
+        explanation: 'Clustering is highly sensitive to the distance metric and feature scaling; both determine what "similar" means and therefore the clusters found.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s1-i5',
+        q: 'A team clusters customers on unscaled features (annual revenue in millions, plus a 1–5 satisfaction score) and the clusters turn out to be purely revenue bands. What is the "what not to do" lesson?',
+        options: [
+          'They used the wrong number of clusters; adding more would fix it',
+          'They skipped feature scaling, so the high-range revenue feature dominated the distance and satisfaction was effectively ignored',
+          'Clustering cannot be used on customer data',
+          'They should have labelled the data first'
+        ],
+        correctIndex: 1,
+        explanation: 'Without scaling, the million-scale revenue feature swamps the 1–5 satisfaction score, so clusters reflect only revenue. Standardise features before clustering.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.2.2 K-means and Gaussian mixture models ----
+    s2: [
+      {
+        id: 'dl-m2-s2-i1',
+        q: 'What does the k-means algorithm iterate between?',
+        options: [
+          'Splitting and merging clusters',
+          'Assigning points to the nearest centroid, then recomputing each centroid as the mean of its points',
+          'Adding and removing features',
+          'Increasing and decreasing k automatically'
+        ],
+        correctIndex: 1,
+        explanation: 'K-means alternates an assignment step (each point to its nearest centroid) and an update step (each centroid becomes the mean of its assigned points) until convergence.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m2-s2-i2',
+        q: 'How does a Gaussian mixture model (GMM) generalise k-means?',
+        options: [
+          'It removes the need to choose the number of components',
+          'It models clusters as Gaussian distributions and assigns soft (probabilistic) memberships, allowing elliptical clusters of different sizes',
+          'It only works on one-dimensional data',
+          'It guarantees the global optimum'
+        ],
+        correctIndex: 1,
+        explanation: 'A GMM represents each cluster as a Gaussian with its own covariance and gives each point a probability of belonging to each component — soft assignment and flexible shapes, unlike k-means\' hard, spherical assignment.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s2-i3',
+        q: 'Why is k-means sensitive to centroid initialisation?',
+        options: [
+          'It is not; results are always identical',
+          'It converges to a local optimum, so different starting centroids can yield different final clusterings',
+          'Initialisation determines the number of features',
+          'Bad initialisation makes it run forever'
+        ],
+        correctIndex: 1,
+        explanation: 'K-means only guarantees a local optimum. Poor initialisation can trap it in a bad solution, which is why methods like k-means++ and multiple restarts are used.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s2-i4',
+        q: 'True or False: K-means implicitly assumes clusters are roughly spherical and similar in size.',
+        options: [
+          'False — k-means handles any cluster shape equally well',
+          'True — because it assigns by Euclidean distance to centroids, it is biased toward spherical, comparably sized clusters',
+          'True — but only when k is even',
+          'False — that assumption belongs to hierarchical clustering'
+        ],
+        correctIndex: 1,
+        explanation: 'Using Euclidean distance to a centroid makes k-means favour spherical, similarly sized clusters; elongated or unequal clusters are poorly captured (a GMM with full covariance does better).',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s2-i5',
+        q: 'An analyst runs k-means once with a single random initialisation on data with elongated, unequal clusters, gets an odd result, and concludes "the data has no structure." What went wrong?',
+        options: [
+          'Nothing; k-means is definitive',
+          'They relied on one initialisation (risking a bad local optimum) and used k-means where its spherical-cluster assumption is violated; multiple restarts or a GMM were needed',
+          'They should have used fewer data points',
+          'k-means cannot run on more than two features'
+        ],
+        correctIndex: 1,
+        explanation: 'A single run can land in a poor local optimum, and k-means is the wrong tool for elongated/unequal clusters. Use k-means++ with multiple restarts, or a GMM, before declaring no structure.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.2.3 Principal component analysis ----
+    s3: [
+      {
+        id: 'dl-m2-s3-i1',
+        q: 'What does principal component analysis (PCA) do?',
+        options: [
+          'Classifies data into labelled categories',
+          'Finds new orthogonal axes (principal components) that capture the directions of greatest variance, enabling dimensionality reduction',
+          'Clusters data into groups',
+          'Removes all correlations by deleting features'
+        ],
+        correctIndex: 1,
+        explanation: 'PCA finds orthogonal directions of maximum variance and projects data onto the top few, reducing dimensionality while retaining as much variance as possible.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m2-s3-i2',
+        q: 'What do the first principal components represent?',
+        options: [
+          'The directions of least variance in the data',
+          'The directions along which the data varies most',
+          'The class labels',
+          'The noise in the data'
+        ],
+        correctIndex: 1,
+        explanation: 'Principal components are ordered by variance explained; the first captures the most variance, the second the most of what remains (orthogonal to the first), and so on.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m2-s3-i3',
+        q: 'Why should features usually be standardised before PCA?',
+        options: [
+          'PCA cannot run on raw data',
+          'PCA is variance-based, so an unscaled large-variance feature would dominate the components regardless of its true importance',
+          'Standardising increases the number of components',
+          'It makes the components non-orthogonal'
+        ],
+        correctIndex: 1,
+        explanation: 'Because PCA maximises variance, a feature with a large numeric range dominates unless features are standardised to comparable scales first.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s3-i4',
+        q: 'True or False: PCA is a supervised method that uses class labels to find its components.',
+        options: [
+          'True — PCA requires labels to compute variance',
+          'False — PCA is unsupervised; it uses only the feature variance/covariance structure, ignoring any labels',
+          'True — but only for two classes',
+          'False — PCA is actually a clustering method'
+        ],
+        correctIndex: 1,
+        explanation: 'PCA is unsupervised: it works purely from the covariance structure of the features and does not use labels. (Label-aware projection is LDA, a different method.)',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s3-i5',
+        q: 'A team applies PCA, keeps just enough components to explain 95% of variance, then is surprised the projection no longer separates two classes well. What is the "what not to do" insight?',
+        options: [
+          'They kept too few components; keeping all of them is always correct',
+          'PCA maximises variance, not class separation — directions of high variance need not align with class discrimination, so PCA can discard the very signal that separated the classes',
+          'PCA always destroys class structure and should never precede classification',
+          'They should have standardised after PCA instead of before'
+        ],
+        correctIndex: 1,
+        explanation: 'High-variance directions are not necessarily discriminative. PCA can drop a low-variance but class-separating direction. When separation matters, consider supervised reduction (e.g. LDA) or validate downstream.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.2.4 Manifold learning ----
+    s4: [
+      {
+        id: 'dl-m2-s4-i1',
+        q: 'What assumption underlies manifold learning?',
+        options: [
+          'That data fills its high-dimensional space uniformly',
+          'That high-dimensional data often lies on or near a lower-dimensional manifold embedded in that space',
+          'That all data is linearly separable',
+          'That features are independent'
+        ],
+        correctIndex: 1,
+        explanation: 'Manifold learning assumes the data, though high-dimensional, actually lies near a lower-dimensional curved surface (manifold), which non-linear methods try to "unfold".',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m2-s4-i2',
+        q: 'How does manifold learning (e.g. t-SNE, Isomap) differ from PCA?',
+        options: [
+          'It is linear; PCA is non-linear',
+          'It can capture non-linear structure, whereas PCA only finds linear projections',
+          'It always preserves global distances exactly',
+          'It requires labelled data'
+        ],
+        correctIndex: 1,
+        explanation: 'PCA is a linear projection; manifold methods model non-linear structure, capturing curved relationships PCA cannot represent.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s4-i3',
+        q: 'What is a key cautionary property of t-SNE visualisations?',
+        options: [
+          'They preserve global distances perfectly',
+          'They emphasise local neighbourhood structure, so cluster sizes and between-cluster distances in the plot can be misleading',
+          'They are fully deterministic across runs',
+          'They require the data to be linearly separable'
+        ],
+        correctIndex: 1,
+        explanation: 't-SNE focuses on preserving local neighbourhoods; the apparent size of clusters and the distances between them are not reliable, and results depend on parameters like perplexity.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s4-i4',
+        q: 'True or False: Distances between well-separated clusters in a t-SNE plot can be interpreted as true measures of how different those clusters are.',
+        options: [
+          'True — t-SNE preserves global distances',
+          'False — t-SNE does not preserve global geometry, so inter-cluster distances and relative sizes should not be read literally',
+          'True — but only when perplexity is high',
+          'False — t-SNE cannot produce separated clusters at all'
+        ],
+        correctIndex: 1,
+        explanation: 't-SNE optimises local structure, not global distances; the gaps and sizes you see are artefacts of the embedding, not faithful measures of dissimilarity.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s4-i5',
+        q: 'A data scientist runs t-SNE once, sees two clusters far apart, and reports to stakeholders that these groups are "extremely different — far more than the others." What is the anti-pattern?',
+        options: [
+          'Running t-SNE at all; PCA is always better',
+          'Over-interpreting t-SNE geometry: inter-cluster distance is not meaningful, and a single run with one perplexity setting is not robust evidence',
+          'Using too few iterations only',
+          'Reporting clusters instead of raw points'
+        ],
+        correctIndex: 1,
+        explanation: 'Reading literal meaning into t-SNE distances is a classic mistake. The separation is not a quantitative measure of difference, and conclusions should not rest on one parameter setting or run.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.2.5 Semi-supervised learning ----
+    s5: [
+      {
+        id: 'dl-m2-s5-i1',
+        q: 'What characterises semi-supervised learning?',
+        options: [
+          'It uses only labelled data',
+          'It combines a small amount of labelled data with a large amount of unlabelled data during training',
+          'It uses no data at all',
+          'It only works for clustering'
+        ],
+        correctIndex: 1,
+        explanation: 'Semi-supervised learning leverages plentiful unlabelled data alongside scarce labelled data, aiming to improve over using the labelled data alone.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m2-s5-i2',
+        q: 'Why is semi-supervised learning attractive in many real-world settings?',
+        options: [
+          'Labels are free and abundant',
+          'Unlabelled data is often cheap and plentiful while labelling is expensive, so using unlabelled data can boost performance cost-effectively',
+          'It removes the need for any labels ever',
+          'It always outperforms supervised learning'
+        ],
+        correctIndex: 1,
+        explanation: 'Labelling is often the costly bottleneck. Semi-supervised methods exploit abundant unlabelled data to improve models when labels are scarce.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m2-s5-i3',
+        q: 'What core assumption do many semi-supervised methods rely on?',
+        options: [
+          'That labelled and unlabelled data come from unrelated distributions',
+          'That nearby points (or points on the same data structure) tend to share the same label — the cluster/manifold assumption',
+          'That all data is labelled eventually',
+          'That unlabelled data is noise to be discarded'
+        ],
+        correctIndex: 1,
+        explanation: 'Methods assume smoothness/cluster structure: points close together or in the same cluster likely share a label, letting unlabelled data shape decision boundaries.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s5-i4',
+        q: 'True or False: Adding unlabelled data through self-training can never hurt model performance.',
+        options: [
+          'True — more data always helps',
+          'False — if the model assigns confident but wrong pseudo-labels, self-training can reinforce its own errors and degrade performance',
+          'True — but only with deep networks',
+          'False — unlabelled data is always ignored anyway'
+        ],
+        correctIndex: 1,
+        explanation: 'Self-training can amplify mistakes: confidently mislabelled unlabelled points feed back as if true, reinforcing errors. Unlabelled data helps only when assumptions hold and pseudo-labels are reliable.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m2-s5-i5',
+        q: 'A team self-trains a classifier: it pseudo-labels unlabelled data, retrains on everything, and repeats — accepting all pseudo-labels regardless of confidence. Accuracy drifts down over rounds. What is the "what not to do" lesson?',
+        options: [
+          'Semi-supervised learning never works; use only labelled data',
+          'They fed back low-confidence and wrong pseudo-labels without a confidence threshold or validation, so the model reinforced its own errors (confirmation bias)',
+          'They needed more rounds of self-training',
+          'They should have discarded the labelled data'
+        ],
+        correctIndex: 1,
+        explanation: 'Unfiltered pseudo-labelling lets errors compound. Use confidence thresholds, keep a clean validation set, and stop when validation performance drops, rather than trusting every pseudo-label.',
+        difficulty: 'hard'
+      }
+    ]
   }
 
 };
