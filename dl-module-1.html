@@ -443,7 +443,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v4';
+const CACHE_VERSION = '2026-06-09-v5';
 const MODULE_ID    = 'dl_m1';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -470,7 +470,7 @@ const SECTION_DATA = [
       heading: 'The scenario',
       html: `
         <p class="prose"><strong>Ananya</strong>, an SF data analyst, is asked to build a quick at-risk-customer flag for a SaaS client. She has 8,000 labelled accounts (lost / retained) described by spend, login frequency, ticket count, and seat utilisation. The client wants something explainable and fast to stand up — no heavy training pipeline.</p>
-        <p class="prose">k-NN is a reasonable first choice: it is intuitive ("accounts similar to ones that were lost tend to be lost too") and needs no training step. But Ananya's features are on wildly different scales, and she has to choose k. Her decisions here determine whether the flag is trustworthy or quietly broken.</p>
+        <p class="prose">k-NN is a reasonable first choice: it is intuitive ("accounts similar to ones that were lost tend to be lost too") and needs no training step. But Ananya's four account attributes — spend, login frequency, ticket count, and seat utilisation — sit on wildly different scales (spend runs into the thousands while seat utilisation is a fraction), and she still has to choose k — how many similar past accounts the model should consult before deciding. Her decisions here determine whether the flag is trustworthy or quietly broken.</p>
         <div class="callout"><strong>Why this is harder than it looks:</strong> k-NN <em>always</em> produces an answer, even when it is meaningless. An at-risk flag that looks reasonable in a demo can fail silently in production if scale and k are mishandled — and nobody sees an error message.</div>`
     },
     ideal: {
