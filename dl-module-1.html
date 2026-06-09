@@ -34,6 +34,39 @@
   .module-title { font-size:26px; font-weight:700; color:var(--text); }
   .module-progress { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:10px; }
 
+  /* Refresher primer */
+  .refresh-wrap { max-width:1100px; margin:18px auto 0; padding:0 32px; }
+  .refresh-toggle { width:100%; display:flex; align-items:center; gap:12px; padding:16px 20px; background:var(--blue-light); border:1.5px solid var(--blue-mid); border-left:3px solid var(--blue); border-radius:var(--radius); cursor:pointer; font-family:'Merriweather Sans',sans-serif; font-size:15.5px; font-weight:700; color:var(--blue-dark); text-align:left; transition:background .15s; }
+  .refresh-toggle:hover { background:#dcebfb; background:var(--blue-light); border-color:var(--blue); }
+  .refresh-toggle .rt-icon { font-size:20px; flex-shrink:0; }
+  .refresh-toggle .rt-text { flex:1; }
+  .refresh-toggle .rt-sub { display:block; font-weight:400; font-size:13px; color:var(--text-dim); margin-top:3px; }
+  .refresh-toggle .rt-chev { font-size:13px; font-family:'Source Code Pro',monospace; transition:transform .2s; flex-shrink:0; }
+  .refresh-toggle.open .rt-chev { transform:rotate(180deg); }
+  .refresh-panel { display:none; margin-top:14px; background:var(--bg2); border:1.5px solid var(--border); border-radius:var(--radius); padding:30px 34px; animation:fadeIn .25s ease; }
+  .refresh-panel.open { display:block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+  .refresh-panel h3 { font-size:20px; font-weight:700; color:var(--text); margin:26px 0 10px; }
+  .refresh-panel h3:first-child { margin-top:0; }
+  .refresh-panel h4 { font-size:16px; font-weight:700; color:var(--blue-dark); margin:18px 0 6px; }
+  .refresh-panel p { font-size:16px; color:var(--text-dim); line-height:1.8; margin-bottom:12px; }
+  .refresh-panel p strong { color:var(--text); font-weight:600; }
+  .refresh-panel ul { margin:0 0 14px; padding-left:22px; }
+  .refresh-panel li { font-size:15.5px; color:var(--text-dim); line-height:1.75; margin-bottom:8px; }
+  .refresh-panel li strong { color:var(--text); font-weight:600; }
+  .rf-eg { border-left:3px solid var(--green); background:var(--green-light); padding:12px 16px; border-radius:0 8px 8px 0; margin:8px 0 16px; font-size:14.5px; line-height:1.7; color:var(--text-dim); }
+  .rf-eg .eg-label { font-size:11px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:5px; }
+  .rf-eg strong { color:var(--text); }
+  .rf-pipeline { counter-reset:step; list-style:none; padding-left:0; }
+  .rf-pipeline > li { position:relative; padding-left:40px; margin-bottom:16px; }
+  .rf-pipeline > li::before { counter-increment:step; content:counter(step); position:absolute; left:0; top:0; width:26px; height:26px; border-radius:50%; background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'Source Code Pro',monospace; }
+  .rf-table { width:100%; border-collapse:collapse; margin:8px 0 4px; }
+  .rf-table th, .rf-table td { text-align:left; padding:10px 14px; border:1px solid var(--border); font-size:14.5px; vertical-align:top; }
+  .rf-table th { background:var(--bg3); font-weight:700; color:var(--text); }
+  .rf-table td { color:var(--text-dim); line-height:1.65; }
+  .refresh-close { margin-top:20px; padding:10px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .refresh-close:hover { background:var(--bg3); }
+
   /* Section pills */
   .section-pills-wrap { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 40px; overflow-x:auto; }
   .section-pills { display:flex; gap:0; }
@@ -200,6 +233,94 @@
   <div class="module-progress" id="moduleProgress">0 of 5 sections complete</div>
 </div>
 
+<div class="refresh-wrap">
+  <button class="refresh-toggle" id="refreshToggle" onclick="toggleRefresh()">
+    <span class="rt-icon">💡</span>
+    <span class="rt-text">Do you want to refresh your knowledge of Supervised Learning?
+      <span class="rt-sub">A quick primer on the fundamentals before you dive into the methods — open it if the sections feel fast-paced.</span>
+    </span>
+    <span class="rt-chev">▼ OPEN</span>
+  </button>
+
+  <div class="refresh-panel" id="refreshPanel">
+    <h3>Supervised Learning — the fundamentals</h3>
+    <p><strong>Supervised learning</strong> is a type of machine learning where a model is trained using <strong>labeled data</strong>, meaning each input is paired with its correct corresponding output.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Labeled data is a row where you already know the answer: a photo tagged <strong>"cat"</strong> or <strong>"dog"</strong>, an email marked <strong>"spam"</strong> or <strong>"not spam"</strong>, or a house listing with its actual <strong>sale price</strong> attached. Real-life uses: a bank labelling past loans as <strong>"repaid"</strong> or <strong>"defaulted"</strong> to predict new applicants, or a hospital labelling scans as <strong>"benign"</strong> or <strong>"malignant"</strong> to flag future ones.
+    </div>
+    <p>The dataset serves as a <strong>"teacher"</strong> or <strong>"supervisor,"</strong> guiding the algorithm to identify underlying patterns and map inputs to the correct answers.</p>
+    <p>Once the training phase is complete, the model can accurately predict outcomes or classify entirely new, unseen data.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Show a model thousands of emails already labelled <strong>spam / not spam</strong> (training phase). It learns that words like "free prize" and certain sender patterns lean spam. Afterwards you hand it a <strong>brand-new email it has never seen</strong> — it predicts "spam" on its own, with no label provided.
+    </div>
+
+    <h3>Core types of supervised learning</h3>
+    <p>Tasks split into two categories based on the nature of the output:</p>
+    <h4>Classification — categorical / discrete output</h4>
+    <p>The model assigns each data point into specific classes ("folders").</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Filtering emails into <strong>"Spam"</strong> or <strong>"Not Spam"</strong>; tagging a transaction as <strong>"fraud"</strong> or <strong>"legitimate"</strong>; classifying a review as <strong>positive / neutral / negative</strong>.
+    </div>
+    <h4>Regression — continuous numerical output</h4>
+    <p>The model learns relationships between variables to forecast a number.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Predicting future <strong>house prices</strong> from size, location, and rooms; forecasting <strong>tomorrow's temperature</strong>; estimating a customer's <strong>lifetime spend</strong>.
+    </div>
+
+    <h3>How the workflow works</h3>
+    <p>Building a functional model follows a standard pipeline:</p>
+    <ul class="rf-pipeline">
+      <li><strong>Data Collection</strong> — gather a dataset with verified inputs and real-world outcomes (<strong>Ground Truth Data</strong>).
+        <div class="rf-eg"><div class="eg-label">Example</div>Collecting 10,000 past loan records where you know who actually repaid vs defaulted — the verified outcome is the ground truth.</div>
+      </li>
+      <li><strong>Data Splitting</strong> — divide into a training set (~80%) to build the model and a testing set (~20%) to evaluate it.
+        <div class="rf-eg"><div class="eg-label">Example</div>From 10,000 loans, train on 8,000 and hold back 2,000 the model never sees during training, so its score on them reflects real performance.</div>
+      </li>
+      <li><strong>Model Training</strong> — feed training inputs and labels into the algorithm so it establishes functional relationships.
+        <div class="rf-eg"><div class="eg-label">Example</div>The algorithm sees applicant features + the known repaid/defaulted label and learns which patterns (income, debt ratio) lead to default.</div>
+      </li>
+      <li><strong>Evaluation</strong> — test on the held-back data to check accuracy and error margins.
+        <div class="rf-eg"><div class="eg-label">Example</div>Run the 2,000 unseen loans through the model; it predicts default correctly 88% of the time — that 88% is your honest accuracy estimate.</div>
+      </li>
+      <li><strong>Inference</strong> — deploy the optimized model to make live predictions on new, unlabeled data.
+        <div class="rf-eg"><div class="eg-label">Example</div>A new applicant applies today; the deployed model instantly predicts their default risk, with no label available yet.</div>
+      </li>
+    </ul>
+
+    <h3>Popular algorithms</h3>
+    <h4>Linear Regression</h4>
+    <p>A baseline model that draws a straight-line trend for continuous numeric predictions.</p>
+    <div class="rf-eg"><div class="eg-label">Scenario</div>Plot house size against price; linear regression fits the best straight line, so a 1,500 sq ft house lands at a predicted price along that line.</div>
+    <h4>Logistic Regression</h4>
+    <p>A classification tool for predicting binary outcomes like yes/no or true/false.</p>
+    <div class="rf-eg"><div class="eg-label">Scenario</div>Given a student's study hours, predict pass / fail. It outputs a probability (e.g. 0.82 → "pass") rather than a raw number.</div>
+    <h4>Decision Trees</h4>
+    <p>A flowchart-like system that splits data into branch choices to reach a clear conclusion.</p>
+    <div class="rf-eg"><div class="eg-label">Scenario</div>"Is income &gt; ₹50k? → Is existing debt &lt; 30%? → Approve." Each question branches until it reaches an approve/deny leaf.</div>
+    <h4>Random Forests</h4>
+    <p>An ensemble that bundles many decision trees to boost accuracy and prevent errors.</p>
+    <div class="rf-eg"><div class="eg-label">Scenario</div>Instead of trusting one tree's loan decision, 300 trees each vote on different random slices of the data; the majority vote is far more robust than any single tree.</div>
+    <h4>Support Vector Machines (SVM)</h4>
+    <p>A method that establishes a clean separation boundary (hyperplane) between complex data clusters.</p>
+    <div class="rf-eg"><div class="eg-label">Scenario</div>Separating two overlapping groups of cells (healthy vs diseased); SVM finds the boundary with the widest possible gap between the closest points of each group.</div>
+
+    <h3>Key benefits and trade-offs</h3>
+    <table class="rf-table">
+      <tr><th>Feature</th><th>Description</th></tr>
+      <tr><td><strong>High Precision</strong></td><td>Delivers highly accurate, reliable results when supported by clean data.</td></tr>
+      <tr><td><strong>Clear Performance Tracking</strong></td><td>Easy to evaluate because models are compared directly against known correct labels.</td></tr>
+      <tr><td><strong>Data Overhead</strong></td><td>Requires expensive, time-consuming human effort to manually tag datasets.</td></tr>
+      <tr><td><strong>Risk of Overfitting</strong></td><td>Can become so rigidly tailored to the training set that it fails on new data.</td></tr>
+    </table>
+
+    <button class="refresh-close" onclick="toggleRefresh()">Close primer ▲</button>
+  </div>
+</div>
+
 <div class="section-pills-wrap">
   <div class="section-pills" id="sectionPills">
     <button class="section-pill active" data-sec="1" onclick="showSection(1)"><span class="pnum">1</span> Nearest neighbors</button>
@@ -312,7 +433,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v1';
+const CACHE_VERSION = '2026-06-09-v2';
 const MODULE_ID    = 'dl_m1';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -578,6 +699,16 @@ function buildSections() {
 }
 
 // ── Navigation ───────────────────────────────────────────────────────────────
+function toggleRefresh() {
+  var t = document.getElementById('refreshToggle');
+  var p = document.getElementById('refreshPanel');
+  if (!t || !p) return;
+  var open = p.classList.toggle('open');
+  t.classList.toggle('open', open);
+  var chev = t.querySelector('.rt-chev');
+  if (chev) chev.textContent = open ? '▲ CLOSE' : '▼ OPEN';
+}
+
 function showSection(n) {
   document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.section-pill').forEach(b => b.classList.remove('active'));
