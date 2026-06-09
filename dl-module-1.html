@@ -64,6 +64,8 @@
   .rf-table th, .rf-table td { text-align:left; padding:10px 14px; border:1px solid var(--border); font-size:14.5px; vertical-align:top; }
   .rf-table th { background:var(--bg3); font-weight:700; color:var(--text); }
   .rf-table td { color:var(--text-dim); line-height:1.65; }
+  .rf-bridge { font-size:16px; color:var(--text-dim); line-height:1.8; margin:6px 0 18px; padding:14px 18px; background:var(--bg3); border-radius:8px; }
+  .rf-bridge strong { color:var(--text); font-weight:600; }
   .refresh-close { margin-top:20px; padding:10px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
   .refresh-close:hover { background:var(--bg3); }
 
@@ -271,6 +273,8 @@
       Predicting future <strong>house prices</strong> from size, location, and rooms; forecasting <strong>tomorrow's temperature</strong>; estimating a customer's <strong>lifetime spend</strong>.
     </div>
 
+    <p class="rf-bridge">Knowing whether your problem is classification or regression tells you what kind of model to aim for — but how do you actually know which is which? Ask one question: is the answer a category or a number? <strong>"Will this customer churn — yes or no?"</strong> is classification. <strong>"How much will this customer spend next month?"</strong> is regression. Once you've identified the type, the next question is how you actually build the model. Whichever type of problem you're solving, the model is created through the same standard sequence of steps.</p>
+
     <h3>How the workflow works</h3>
     <p>Building a functional model follows a standard pipeline:</p>
     <ul class="rf-pipeline">
@@ -291,6 +295,8 @@
       </li>
     </ul>
 
+    <p class="rf-bridge">Notice that step 3 — Model Training — glossed over one thing: what actually does the learning? That's the algorithm. The pipeline is the same for every problem, but the algorithm plugged into the training step is the engine that finds the patterns — and different engines suit different problems.<br><br>For example: to predict a house's price (a number), a <strong>Linear Regression</strong> engine that fits a trend line fits naturally. To decide if an email is spam (yes/no), a <strong>Logistic Regression</strong> engine that outputs a probability suits better. To approve or deny a loan using a clear set of rules, a <strong>Decision Tree</strong> engine that branches through questions is the easiest to follow. Same pipeline each time — different engine for the job. Here are the ones you'll meet most often.</p>
+
     <h3>Popular algorithms</h3>
     <h4>Linear Regression</h4>
     <p>A baseline model that draws a straight-line trend for continuous numeric predictions.</p>
@@ -308,6 +314,8 @@
     <p>A method that establishes a clean separation boundary (hyperplane) between complex data clusters.</p>
     <div class="rf-eg"><div class="eg-label">Scenario</div>Separating two overlapping groups of cells (healthy vs diseased); SVM finds the boundary with the widest possible gap between the closest points of each group.</div>
 
+    <p class="rf-bridge">These algorithms differ in their details, but they all share the same foundation: learning from labeled data. That shared foundation gives supervised learning as a whole a consistent set of strengths — and a consistent set of catches to watch for, no matter which algorithm you pick.</p>
+
     <h3>Key benefits and trade-offs</h3>
     <table class="rf-table">
       <tr><th>Feature</th><th>Description</th></tr>
@@ -316,6 +324,8 @@
       <tr><td><strong>Data Overhead</strong></td><td>Requires expensive, time-consuming human effort to manually tag datasets.</td></tr>
       <tr><td><strong>Risk of Overfitting</strong></td><td>Can become so rigidly tailored to the training set that it fails on new data.</td></tr>
     </table>
+
+    <p class="rf-bridge">Now you have the big picture: labeled data, the two problem types, the build pipeline, the algorithm choices, and the trade-offs. The first method ahead, <strong>k-Nearest Neighbors</strong>, is one you already use without naming it. Move to a new neighbourhood and you guess whether a café is good by glancing at the ones around it; meet someone and you estimate their taste in music from the friends they keep. You judge the unknown by what's nearest to it. That's the whole idea: to classify something new, look at the most similar labeled examples and go with the majority. No equations — just <strong>"who or what does this resemble?"</strong> Carry that instinct into the next section and k-NN will feel obvious.</p>
 
     <button class="refresh-close" onclick="toggleRefresh()">Close primer ▲</button>
   </div>
@@ -433,7 +443,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v2';
+const CACHE_VERSION = '2026-06-09-v3';
 const MODULE_ID    = 'dl_m1';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
