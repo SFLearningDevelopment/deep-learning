@@ -443,7 +443,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v8';
+const CACHE_VERSION = '2026-06-09-v9';
 const MODULE_ID    = 'dl_m1';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -464,6 +464,14 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           Imagine plotting customers by two features: monthly spend (₹0–₹50,000) and number of support tickets (0–10). If you compute raw Euclidean distance, spend dwarfs tickets — a ₹1,000 difference swamps a 5-ticket difference. After standardising both to comparable ranges, "nearest" reflects both features fairly, and the vote among the k neighbours becomes meaningful.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          To picture what <strong>k</strong> does, imagine moving to a new street and guessing whether a newly opened café is "trendy" or "traditional" by looking at the cafés nearest to it and going with the majority.<br><br>
+          <strong>Small k (ask just 1 nearest café):</strong> the single closest café happens to be a quirky cat café, so you label the new place "trendy" — purely because of that one odd neighbour. Move to the next corner and the nearest café there is an old tea house, so you call that one "traditional." Your verdict swings wildly corner to corner, chasing each individual oddity — a jagged, noise-sensitive boundary.<br><br>
+          <strong>Moderate k (ask the 15 nearest cafés):</strong> one quirky cat café can no longer sway the vote; the majority of the 15 reflects the area's real character. Your verdicts become stable and smooth, and a single outlier no longer flips the call.<br><br>
+          <strong>Too-large k (ask all 500 cafés in the city):</strong> now you are averaging across downtown hipster zones and suburban family areas at once. Everything blurs into one city-wide average, and you lose the genuine difference between the trendy district and the traditional one — over-smoothed, real distinctions erased.<br><br>
+          The whole trade-off in one line: too few voices = noisy, too many = washed out, a moderate number = just right.
         </div>`
     },
     scenario: {
