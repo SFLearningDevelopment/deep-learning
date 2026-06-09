@@ -443,7 +443,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v7';
+const CACHE_VERSION = '2026-06-09-v8';
 const MODULE_ID    = 'dl_m1';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -485,9 +485,9 @@ const SECTION_DATA = [
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Skipping feature scaling.</strong> Running k-NN on raw features lets the widest-range feature (spend) dictate every neighbour. The other three features barely matter, and the flag effectively becomes "high spenders vs low spenders" regardless of the real at-risk signal.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Setting k=1 and trusting training accuracy.</strong> With k=1 every training point is its own nearest neighbour, so training accuracy is always ~100%. Reporting that number as if it meant something hides severe overfitting.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring prediction cost at scale.</strong> Naive k-NN compares each query against the whole stored set. Shipping it for millions of real-time lookups without a spatial index turns a demo-fast model into a production bottleneck.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Skipping feature scaling.</strong> Running k-NN on raw features lets the widest-range feature (spend) dictate every neighbour. The other three features barely matter, and the flag effectively becomes "high spenders vs low spenders" regardless of the real at-risk signal. <strong>How:</strong> k-NN ranks neighbours by raw distance. Spend spans ₹0–₹50,000 while utilisation spans 0–1, so a ₹5,000 spend gap adds 5,000 to the distance while a full utilisation swing adds just 1. Spend's raw magnitude is thousands of times larger, so it alone decides who counts as "nearest" — the other three barely move the number, and the flag becomes "is this a big spender?" in disguise.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Setting k=1 and trusting training accuracy.</strong> With k=1 every training point is its own nearest neighbour, so training accuracy is always ~100%. Reporting that number as if it meant something hides severe overfitting. <strong>How:</strong> with k=1, each training account's single nearest neighbour is itself (distance 0), so it predicts its own known label perfectly — ~100% by construction. That measures memorisation, not learning, and says nothing about unseen accounts, which is where the model is actually used.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring prediction cost at scale.</strong> Naive k-NN compares each query against the whole stored set. Shipping it for millions of real-time lookups without a spatial index turns a demo-fast model into a production bottleneck. <strong>How:</strong> k-NN stores all data and, at prediction time, computes the distance from the query to every stored account. With 8,000 accounts that's instant; at millions, each lookup must scan the whole set, so latency grows with dataset size — unless a spatial index (e.g. KD-tree or ball-tree) prunes the search.</div>`
     }
   },
   {
