@@ -1627,6 +1627,286 @@ window.DL_QUESTION_BANK = {
         difficulty: 'hard'
       }
     ]
+  },
+
+  // ============ MODULE 5: More Complex Models (12% weight) ============
+  m5: {
+
+    // ---- 5.5.1 Three-dimensional CNNs ----
+    s1: [
+      {
+        id: 'dl-m5-s1-i1',
+        q: 'What does a 3D convolution add compared to a 2D convolution?',
+        options: [
+          'It removes the need for pooling',
+          'Its kernel slides over a third dimension (e.g. time or depth), capturing patterns across that dimension as well as spatially',
+          'It only works on grayscale images',
+          'It eliminates channels'
+        ],
+        correctIndex: 1,
+        explanation: 'A 3D convolution extends the kernel over a third axis — such as temporal frames in video or depth in volumetric data — capturing structure across that dimension.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m5-s1-i2',
+        q: 'Which application is a natural fit for 3D CNNs?',
+        options: [
+          'Single static image classification',
+          'Video action recognition or volumetric medical scans, where structure spans time or depth',
+          'Tabular data regression',
+          'Plain text sentiment analysis'
+        ],
+        correctIndex: 1,
+        explanation: '3D CNNs suit data with a meaningful third dimension — video (space + time) or volumetric scans (3D space) — where patterns extend beyond a single 2D plane.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m5-s1-i3',
+        q: 'What is a key practical cost of 3D CNNs relative to 2D CNNs?',
+        options: [
+          'They cannot be trained with backpropagation',
+          'They have substantially more parameters and higher compute/memory demands due to the extra dimension',
+          'They require no training data',
+          'They only run on CPUs'
+        ],
+        correctIndex: 1,
+        explanation: 'Adding a dimension multiplies kernel size and feature-map volume, so 3D CNNs are markedly more expensive in parameters, compute, and memory than 2D counterparts.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s1-i4',
+        q: 'True or False: Treating video as independent 2D frames discards temporal information that a 3D CNN could capture.',
+        options: [
+          'False — frame order carries no useful information',
+          'True — processing frames independently ignores motion and temporal dynamics that a 3D (or temporal) model can exploit',
+          'True — but only for very short videos',
+          'False — 2D frame processing always outperforms 3D'
+        ],
+        correctIndex: 1,
+        explanation: 'Independent 2D frame processing loses temporal structure (motion, ordering). 3D or temporal models capture how content evolves across frames.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s1-i5',
+        q: 'A team applies a heavy 3D CNN to a task that is essentially static-per-frame, exhausting GPU memory and training slowly for no accuracy gain. What is the "what not to do" lesson?',
+        options: [
+          '3D CNNs should always be used for any image data',
+          'Using an expensive 3D model where the third dimension carries little signal wastes compute; match model dimensionality to where the task\'s information actually lives',
+          'They should have used an even larger 3D model',
+          'Memory limits are irrelevant in deep learning'
+        ],
+        correctIndex: 1,
+        explanation: 'A 3D CNN is justified only when the third dimension holds signal. Applying it to effectively static data burns memory and time for no benefit — match the architecture to the data\'s structure.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.5.2 Recurrent neural networks ----
+    s2: [
+      {
+        id: 'dl-m5-s2-i1',
+        q: 'What makes recurrent neural networks (RNNs) suited to sequential data?',
+        options: [
+          'They process all inputs simultaneously with no order',
+          'They maintain a hidden state that carries information across time steps, modelling dependencies in sequences',
+          'They ignore previous inputs entirely',
+          'They only work on fixed-size images'
+        ],
+        correctIndex: 1,
+        explanation: 'RNNs pass a hidden state from one step to the next, letting earlier elements of a sequence influence later predictions — natural for text, speech, and time series.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m5-s2-i2',
+        q: 'Why were LSTM and GRU units introduced over vanilla RNNs?',
+        options: [
+          'To make networks shallower',
+          'To use gating mechanisms that preserve gradients over long sequences, mitigating vanishing/exploding gradients',
+          'To remove the hidden state',
+          'To eliminate the need for training'
+        ],
+        correctIndex: 1,
+        explanation: 'Gated units (LSTM/GRU) regulate information flow, helping retain relevant signal and keep gradients stable across long sequences where vanilla RNNs struggle.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s2-i3',
+        q: 'What does "backpropagation through time" refer to?',
+        options: [
+          'Training a model before collecting data',
+          'Unrolling the RNN across time steps and applying backpropagation through the unrolled network',
+          'Predicting the future without training',
+          'A method to skip the backward pass'
+        ],
+        correctIndex: 1,
+        explanation: 'BPTT unrolls the recurrence over the sequence and backpropagates through every step, which is why long sequences are prone to vanishing/exploding gradients.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s2-i4',
+        q: 'True or False: Vanilla RNNs can struggle to learn long-range dependencies because gradients tend to vanish over many time steps.',
+        options: [
+          'False — RNNs handle arbitrarily long dependencies perfectly',
+          'True — gradients shrinking across many steps make it hard for vanilla RNNs to connect distant elements, motivating gated units',
+          'True — but only for numeric sequences',
+          'False — long-range dependencies are impossible for any model'
+        ],
+        correctIndex: 1,
+        explanation: 'Across many time steps, repeated gradient multiplication shrinks the signal, so vanilla RNNs struggle with long-range dependencies — a key reason LSTMs/GRUs (and later Transformers) were developed.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s2-i5',
+        q: 'A team uses a vanilla RNN on very long documents to capture dependencies between distant sentences; it fails to connect them and training is unstable. What is the anti-pattern and remedy?',
+        options: [
+          'RNNs can never process text; abandon the task',
+          'Expecting a vanilla RNN to capture long-range dependencies ignores its vanishing-gradient limitation; gated units (LSTM/GRU), gradient clipping, or attention/Transformers are appropriate remedies',
+          'They should have used a shorter hidden state of size zero',
+          'Long documents should simply be truncated to one word'
+        ],
+        correctIndex: 1,
+        explanation: 'Vanilla RNNs are poorly suited to long-range dependencies. Use gated architectures, gradient clipping, or attention-based models (Transformers) designed to handle long contexts.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.5.3 Transformers ----
+    s3: [
+      {
+        id: 'dl-m5-s3-i1',
+        q: 'What core mechanism do Transformers rely on?',
+        options: [
+          'Recurrence over time steps',
+          'Self-attention, which lets each element attend to all others and weigh their relevance',
+          'Pooling layers only',
+          '3D convolution'
+        ],
+        correctIndex: 1,
+        explanation: 'Transformers use self-attention so every position can directly attend to every other, capturing relationships regardless of distance — without recurrence.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m5-s3-i2',
+        q: 'What advantage does self-attention have over recurrence for long sequences?',
+        options: [
+          'It processes elements strictly one at a time',
+          'It connects distant positions directly (constant path length) and allows parallel processing, easing long-range dependencies',
+          'It removes the need for any training data',
+          'It guarantees smaller models'
+        ],
+        correctIndex: 1,
+        explanation: 'Self-attention links any two positions directly and processes the sequence in parallel, handling long-range dependencies better than step-by-step recurrence.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s3-i3',
+        q: 'Why do Transformers need positional encodings?',
+        options: [
+          'To reduce the number of parameters',
+          'Because self-attention alone is order-agnostic, positional information must be added so the model knows element ordering',
+          'To replace the attention mechanism',
+          'To convert text into images'
+        ],
+        correctIndex: 1,
+        explanation: 'Self-attention treats inputs as a set, with no inherent order. Positional encodings inject sequence-order information so the model can use position.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s3-i4',
+        q: 'True or False: A practical consideration with self-attention is that its cost grows quadratically with sequence length.',
+        options: [
+          'False — attention cost is independent of sequence length',
+          'True — standard self-attention compares every pair of positions, so compute and memory scale roughly with the square of the sequence length',
+          'True — but only during inference',
+          'False — attention scales linearly in all cases'
+        ],
+        correctIndex: 1,
+        explanation: 'Full self-attention computes pairwise interactions, so cost grows ~quadratically with length — a real constraint that motivates efficient-attention variants for very long sequences.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s3-i5',
+        q: 'A team feeds extremely long sequences into a standard Transformer without considering attention cost; memory blows up and throughput collapses. What is the "what not to do" lesson?',
+        options: [
+          'Transformers cannot handle sequences at all',
+          'Ignoring the quadratic cost of full self-attention on very long inputs causes memory/compute blow-ups; chunking, efficient-attention variants, or length limits are needed',
+          'They should have removed positional encodings',
+          'Sequence length never affects Transformer cost'
+        ],
+        correctIndex: 1,
+        explanation: 'Full attention scales quadratically with length, so naively feeding very long sequences is infeasible. Use efficient-attention variants, chunking, or sensible length limits.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.5.4 Generative models ----
+    s4: [
+      {
+        id: 'dl-m5-s4-i1',
+        q: 'What distinguishes a generative model from a discriminative one?',
+        options: [
+          'Generative models only classify; discriminative models only cluster',
+          'Generative models learn to produce new data resembling the training distribution; discriminative models learn boundaries between classes',
+          'Generative models require no data',
+          'There is no difference'
+        ],
+        correctIndex: 1,
+        explanation: 'Generative models capture the data distribution and can synthesise new samples; discriminative models focus on separating classes given inputs.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m5-s4-i2',
+        q: 'How does a generative adversarial network (GAN) train?',
+        options: [
+          'A single network minimises reconstruction error',
+          'A generator and a discriminator compete — the generator tries to produce realistic samples while the discriminator tries to tell real from fake',
+          'It uses only labelled data with cross-entropy',
+          'It never uses gradients'
+        ],
+        correctIndex: 1,
+        explanation: 'A GAN pits a generator against a discriminator in a minimax game; the generator improves by trying to fool the discriminator, which improves at detecting fakes.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s4-i3',
+        q: 'What is "mode collapse" in GAN training?',
+        options: [
+          'The discriminator becomes perfect and training ends successfully',
+          'The generator produces limited, repetitive outputs covering only a few modes of the data distribution rather than its full diversity',
+          'The model runs out of memory',
+          'The learning rate becomes zero'
+        ],
+        correctIndex: 1,
+        explanation: 'Mode collapse is when the generator outputs a narrow set of samples, failing to capture the diversity of the real data — a common GAN training pathology.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s4-i4',
+        q: 'True or False: Evaluating generative models is inherently harder than evaluating classifiers, since there is no single accuracy number for sample quality and diversity.',
+        options: [
+          'False — accuracy fully measures generative quality',
+          'True — assessing realism and diversity of generated samples is multifaceted and cannot be reduced to one accuracy figure',
+          'True — but only for text generation',
+          'False — generative models need no evaluation'
+        ],
+        correctIndex: 1,
+        explanation: 'Generative quality spans realism and diversity, with no single ground-truth label per output, so evaluation relies on multiple imperfect metrics and judgement rather than one accuracy number.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m5-s4-i5',
+        q: 'A team declares their GAN a success based on a handful of cherry-picked, realistic-looking samples, never checking diversity; in deployment it generates near-identical outputs. What is the anti-pattern?',
+        options: [
+          'Cherry-picking samples is a valid evaluation method',
+          'Judging a generative model only by a few good-looking samples ignores mode collapse and diversity; evaluation must assess the full distribution, not curated examples',
+          'They should have generated fewer samples',
+          'Diversity is irrelevant for generative models'
+        ],
+        correctIndex: 1,
+        explanation: 'A few realistic samples can hide mode collapse. Proper evaluation checks both realism and diversity across many samples, rather than trusting cherry-picked outputs.',
+        difficulty: 'hard'
+      }
+    ]
   }
 
 };
