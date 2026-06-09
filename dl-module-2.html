@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 2 — Unsupervised Learning · Deep Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather+Sans:wght@300;400;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#eef2f7; --bg2:#ffffff; --bg3:#f0f4f9; --border:#d0dae8;
+    --text:#1a2332; --text-dim:#4a5568; --text-dimmer:#8fa3bc;
+    --blue:#1a6eb5; --blue-light:#e8f1fb; --blue-mid:#b8d0ed; --blue-dark:#0f4a7a;
+    --pm:#1a6eb5; --pm-light:#e8f1fb; --pm-mid:#b8d0ed; --pm-dark:#0f4a7a;
+    --coral:#c0392b; --coral-light:#fdf0ee; --coral-mid:#f0b8b2;
+    --green:#1a6b3a; --green-light:#e8f5ed; --green-mid:#a3d4b8;
+    --amber:#92600a; --amber-light:#fdf3e3;
+    --code-bg:#1e2433; --code-text:#cdd6f4; --radius:12px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Merriweather Sans',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
+
+  .topnav { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 32px; height:52px; display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:var(--text-dim); }
+  .topnav a { color:var(--pm); text-decoration:none; }
+  .topnav a:hover { text-decoration:underline; }
+  .sep { opacity:.4; }
+
+  /* Module header band */
+  .module-band { background:var(--bg2); border-bottom:1px solid var(--border); padding:24px 40px; }
+  .module-eyebrow { font-size:13px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--blue); margin-bottom:6px; }
+  .module-title { font-size:26px; font-weight:700; color:var(--text); }
+  .module-progress { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:10px; }
+
+  /* Section pills */
+  .section-pills-wrap { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 40px; overflow-x:auto; }
+  .section-pills { display:flex; gap:0; }
+  .section-pill {
+    display:flex; align-items:center; gap:8px; padding:14px 18px;
+    font-size:15px; font-weight:700; color:var(--text-dimmer);
+    border-bottom:2px solid transparent; cursor:pointer; background:none; border-top:none; border-left:none; border-right:none;
+    white-space:nowrap; transition:color .15s; font-family:'Merriweather Sans',sans-serif;
+  }
+  .section-pill .pnum {
+    width:26px; height:26px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    font-family:'Source Code Pro',monospace; flex-shrink:0; transition:all .15s;
+  }
+  .section-pill.active { color:var(--blue); border-bottom-color:var(--blue); }
+  .section-pill.active .pnum { background:var(--blue); border-color:var(--blue); color:#fff; }
+  .section-pill.done .pnum { background:var(--green); border-color:var(--green); color:#fff; }
+
+  .main { max-width:1100px; margin:0 auto; padding:32px; }
+
+  /* Section panel */
+  .section-panel { display:none; }
+  .section-panel.active { display:block; }
+
+  /* Tab row (within a section) */
+  .tabs-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius) var(--radius) 0 0; padding:0 8px; overflow-x:auto; }
+  .tabs { display:flex; gap:0; }
+  .tab-btn {
+    display:flex; align-items:center; gap:8px; padding:14px 16px;
+    font-size:14.5px; font-weight:700; color:var(--text-dimmer);
+    border-bottom:2px solid transparent; cursor:pointer; background:none; border-top:none; border-left:none; border-right:none;
+    white-space:nowrap; transition:color .15s; font-family:'Merriweather Sans',sans-serif;
+  }
+  .tab-btn .num { width:24px; height:24px; border-radius:50%; background:var(--bg3); border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; font-family:'Source Code Pro',monospace; flex-shrink:0; transition:all .15s; }
+  .tab-btn.active { color:var(--blue); border-bottom-color:var(--blue); }
+  .tab-btn.active .num { background:var(--blue); border-color:var(--blue); color:#fff; }
+
+  .tab-body { background:var(--bg2); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); padding:32px; }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
+
+  .tab-label { font-size:13px; font-family:'Source Code Pro',monospace; font-weight:700; color:var(--blue); letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+  .tab-heading { font-size:23px; font-weight:700; margin-bottom:18px; }
+
+  .prose { font-size:16.5px; color:var(--text-dim); line-height:1.85; margin-bottom:18px; }
+  .prose strong { color:var(--text); font-weight:600; }
+
+  .callout { border-left:3px solid var(--blue); background:var(--blue-light); padding:14px 18px; border-radius:0 8px 8px 0; margin:18px 0; font-size:14.5px; line-height:1.7; color:var(--text-dim); }
+  .callout-warn { border-left-color:var(--amber); background:var(--amber-light); }
+  .callout-bad  { border-left-color:var(--coral); background:var(--coral-light); }
+  .callout-good { border-left-color:var(--green); background:var(--green-light); }
+  .callout strong { color:var(--text); }
+
+  .example-block { background:var(--bg3); border:1.5px solid var(--border); border-radius:var(--radius); padding:18px 22px; margin:18px 0; font-size:15.5px; line-height:1.8; color:var(--text-dim); }
+  .example-block .ex-label { font-size:12px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px; }
+
+  .divider { height:1px; background:var(--border); margin:26px 0; }
+  .tab-nav-row { display:flex; justify-content:space-between; margin-top:24px; }
+  .continue-btn { padding:11px 22px; background:var(--blue); color:#fff; border:none; border-radius:8px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:'Merriweather Sans',sans-serif; transition:background .15s; }
+  .continue-btn:hover { background:var(--blue-dark); }
+  .ghost-btn { padding:11px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .ghost-btn:hover { background:var(--bg3); }
+  .ghost-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+  /* Assessment */
+  .assessment-title { font-size:18px; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .assessment-sub { font-size:14.5px; color:var(--text-dim); line-height:1.7; margin-bottom:22px; }
+  .question-block { margin-bottom:26px; padding-bottom:22px; border-bottom:1px solid var(--border); }
+  .question-block:last-of-type { border-bottom:none; }
+  .q-num { font-size:11px; font-family:'Source Code Pro',monospace; color:var(--blue); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; font-weight:600; }
+  .q-text { font-size:15.5px; font-weight:600; color:var(--text); line-height:1.5; margin-bottom:14px; }
+  .options { display:flex; flex-direction:column; gap:10px; }
+  .option { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; border-radius:8px; border:1.5px solid var(--border); cursor:pointer; font-size:14.5px; color:var(--text-dim); line-height:1.5; transition:border-color .15s, background .15s; }
+  .option:hover { border-color:var(--blue-mid); background:var(--blue-light); }
+  .option input[type="radio"] { margin-top:3px; flex-shrink:0; accent-color:var(--blue); }
+  .submit-btn { margin-top:18px; padding:12px 28px; background:var(--blue); color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .submit-btn:disabled { background:var(--border); color:var(--text-dimmer); cursor:not-allowed; }
+  .submit-btn:not(:disabled):hover { background:var(--blue-dark); }
+  .submit-note { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:8px; }
+  .submitted-wrap { text-align:center; padding:16px 0; }
+  .submitted-icon { font-size:34px; color:var(--green); margin-bottom:6px; }
+  .submitted-title { font-size:17px; font-weight:700; color:var(--green); margin-bottom:8px; }
+  .submitted-body { font-size:14.5px; color:var(--text-dim); line-height:1.7; }
+
+  /* Module complete bar */
+  .complete-bar { display:flex; align-items:center; gap:12px; padding:14px 20px; border-radius:8px; margin:24px 0 8px; font-size:14px; font-family:'Source Code Pro',monospace; font-weight:600; border:1.5px solid var(--border); background:var(--bg3); color:var(--text-dimmer); transition:all .2s; }
+  .complete-bar.disabled { opacity:.7; }
+  .complete-bar.ready { background:var(--blue-light); border-color:var(--blue-mid); border-left:3px solid var(--blue); color:var(--blue-dark); cursor:pointer; }
+  .complete-bar.done { background:var(--green-light); border-color:var(--green-mid); border-left:3px solid var(--green); color:var(--green); }
+  .complete-bar input[type="checkbox"] { width:18px; height:18px; accent-color:var(--green); }
+  .redo-btn { display:none; margin-left:16px; padding:8px 18px; background:var(--bg2); color:var(--coral); border:1.5px solid var(--coral-mid); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .redo-btn:hover { background:var(--coral-light); }
+  .redo-btn.visible { display:inline-block; }
+  .hidden { display:none !important; }
+
+  .bottom-nav { display:flex; justify-content:space-between; padding:28px 0 0; border-top:1px solid var(--border); margin-top:32px; }
+  .nav-btn { padding:12px 20px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; font-family:'Merriweather Sans',sans-serif; background:var(--blue); color:#fff; border:none; }
+  .nav-btn:hover { background:var(--blue-dark); }
+  .nav-btn.back { background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); }
+
+  footer { text-align:center; padding:26px 32px; font-size:11px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); border-top:1px solid var(--border); line-height:1.7; }
+  footer .attrib { display:block; margin-top:6px; opacity:.85; font-style:italic; }
+
+  /* Auth */
+  .auth-overlay { position:fixed; inset:0; background:rgba(15,30,60,.7); display:flex; align-items:center; justify-content:center; z-index:9999; backdrop-filter:blur(4px); }
+  .auth-overlay.hidden { display:none; }
+  .auth-box { background:#fff; border-radius:16px; padding:48px 40px; max-width:420px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+  .auth-logo { font-size:32px; margin-bottom:16px; }
+  .auth-title { font-size:22px; font-weight:700; color:var(--text); margin-bottom:8px; }
+  .auth-sub { font-size:15px; color:var(--text-dim); line-height:1.6; margin-bottom:28px; }
+  .auth-google-btn { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:14px 20px; border-radius:8px; background:var(--blue); color:#fff; border:none; font-size:16px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; transition:background .15s; }
+  .auth-google-btn:hover { background:var(--blue-dark); }
+  .auth-google-btn svg { width:20px; height:20px; flex-shrink:0; }
+  .auth-error { font-size:13px; color:var(--coral); margin-top:12px; font-family:'Source Code Pro',monospace; }
+  .auth-user-bar { background:var(--blue-light); border-bottom:1px solid var(--blue-mid); padding:8px 32px; font-size:13px; font-family:'Source Code Pro',monospace; color:var(--blue-dark); display:flex; align-items:center; justify-content:space-between; }
+  .auth-user-bar.hidden { display:none; }
+  .auth-signout { background:var(--blue); color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:700; font-family:'Merriweather Sans',sans-serif; padding:8px 18px; text-decoration:none; }
+
+  @media(max-width:640px) { .topnav,.main,.module-band { padding-left:18px; padding-right:18px; } .section-pills-wrap { padding-left:14px; } .tab-body { padding:22px 18px; } }
+</style>
+</head>
+<body>
+
+<!-- Auth overlay -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">🧠</div>
+    <div class="auth-title">Deep Learning</div>
+    <div class="auth-sub">Sign in with your SourceFuse Google account to access the course and save your progress.</div>
+    <button class="auth-google-btn" id="googleSignInBtn">
+      <svg viewBox="0 0 48 48"><path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="auth-error hidden" id="authError"></div>
+  </div>
+</div>
+
+<div class="auth-user-bar hidden" id="authUserBar">
+  <span id="authUserEmail"></span>
+  <button class="auth-signout" id="authSignOutBtn">Sign out</button>
+</div>
+
+<nav class="topnav">
+  <a href="deep-learning-dashboard.html">Back to course dashboard</a>
+  <span class="sep">/</span>
+  <span>Module 2</span>
+  <span class="sep">/</span>
+  <span>Unsupervised learning</span>
+</nav>
+
+<div class="module-band">
+  <div class="module-eyebrow">Module 2 of 5</div>
+  <div class="module-title">Unsupervised Learning</div>
+  <div class="module-progress" id="moduleProgress">0 of 5 sections complete</div>
+</div>
+
+<div class="section-pills-wrap">
+  <div class="section-pills" id="sectionPills">
+    <button class="section-pill active" data-sec="1" onclick="showSection(1)"><span class="pnum">1</span> Clustering</button>
+    <button class="section-pill" data-sec="2" onclick="showSection(2)"><span class="pnum">2</span> K-means &amp; GMMs</button>
+    <button class="section-pill" data-sec="3" onclick="showSection(3)"><span class="pnum">3</span> Principal component analysis</button>
+    <button class="section-pill" data-sec="4" onclick="showSection(4)"><span class="pnum">4</span> Manifold learning</button>
+    <button class="section-pill" data-sec="5" onclick="showSection(5)"><span class="pnum">5</span> Semi-supervised learning</button>
+  </div>
+</div>
+
+<div class="main" id="sectionsRoot">
+  <!-- Sections injected by JS from SECTION_DATA -->
+</div>
+
+<div class="main" style="padding-top:0;">
+  <div class="bottom-nav">
+    <a class="nav-btn back" href="dl-module-1.html">← Module 1 — Supervised learning</a>
+    <a class="nav-btn" href="dl-module-3.html">Module 3 — Deep neural networks →</a>
+  </div>
+</div>
+
+<footer>
+  Deep Learning · SourceFuse L&amp;D · Leads to the SF Certified Deep Learning Practitioner certification
+  <span class="attrib">Topic structure adapted from R. Szeliski, “Computer Vision: Algorithms and Applications” (2nd ed.), Chapter 5. Instructional scenarios and explanations are original content.</span>
+</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const _FB_CONFIG = {
+  apiKey: "AIzaSyC-I-IOCq2fCwa471fsD5xOn6SYQSBDp7Q",
+  authDomain: "sfcertification-grafana.firebaseapp.com",
+  projectId: "sfcertification-grafana",
+  storageBucket: "sfcertification-grafana.firebasestorage.app",
+  messagingSenderId: "227322696511",
+  appId: "1:227322696511:web:12e7ced7dd3d45fa06798a"
+};
+if (!window._fbApp) { window._fbApp = firebase.initializeApp(_FB_CONFIG); }
+const _auth = firebase.auth(window._fbApp);
+const _provider = new firebase.auth.GoogleAuthProvider();
+_provider.setCustomParameters({ hd: 'sourcefuse.com' });
+
+window.dlLearnerKey = function(sectionId) {
+  const uid = window._learnerUid || 'anon';
+  return 'dl_learner_' + uid + '_' + MODULE_ID + '_' + sectionId;
+};
+
+function showOverlay()   { document.getElementById('authOverlay')?.classList.remove('hidden'); }
+function hideOverlay()   { document.getElementById('authOverlay')?.classList.add('hidden'); }
+function showUserBar(email) {
+  const bar = document.getElementById('authUserBar');
+  const em  = document.getElementById('authUserEmail');
+  if (bar) bar.classList.remove('hidden');
+  if (em)  em.textContent = 'Welcome, ' + email;
+}
+
+_auth.onAuthStateChanged(function(user) {
+  if (user) {
+    const email = user.email || '';
+    if (!email.endsWith('@sourcefuse.com')) {
+      const errEl = document.getElementById('authError');
+      if (errEl) { errEl.textContent = 'Please use your @sourcefuse.com account.'; errEl.classList.remove('hidden'); }
+      _auth.signOut();
+      showOverlay();
+      return;
+    }
+    window._learnerUid   = user.uid;
+    window._learnerEmail = email;
+    hideOverlay();
+    showUserBar(email);
+    document.dispatchEvent(new Event('learnerReady'));
+  } else {
+    window._learnerUid   = null;
+    window._learnerEmail = null;
+    showOverlay();
+  }
+});
+
+document.getElementById('googleSignInBtn')?.addEventListener('click', function() {
+  _auth.signInWithPopup(_provider).catch(function(err) {
+    const el = document.getElementById('authError');
+    if (el) { el.textContent = err.message; el.classList.remove('hidden'); }
+  });
+});
+document.getElementById('authSignOutBtn')?.addEventListener('click', function() { _auth.signOut(); });
+</script>
+
+<!-- Question bank -->
+<script src="deep-learning-question-bank.js"></script>
+
+<script>
+const CACHE_VERSION = '2026-06-09-v1';
+const MODULE_ID    = 'dl_m2';
+const CP_COURSE_ID = 'deepLearning2026SFCert';
+const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
+const BANK_KEY     = 'm2';   // key into window.DL_QUESTION_BANK
+
+console.log('%c[Deep Learning] dl-module-2.html — v' + CACHE_VERSION, 'color:#1a6eb5;font-weight:bold;');
+
+// ── Section teaching content ────────────────────────────────────────────────
+// Each section: 4 teaching tabs (concept, scenario, ideal, avoid) + quiz tab.
+const SECTION_DATA = [
+  {
+    id: 's1', title: 'Clustering',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>Clustering</strong> groups data points by similarity <em>without any labels</em> — it is the unsupervised counterpart to classification. The algorithm discovers structure rather than predicting known categories. Success is judged by whether the groups are useful and coherent, not by accuracy against a ground truth.</p>
+        <p class="prose">Two decisions dominate. The <strong>distance/similarity metric</strong> and <strong>feature scaling</strong> define what "similar" means — change them and the clusters change. And the <strong>number of clusters</strong> is rarely obvious: flat methods like k-means need it up front, while <strong>hierarchical</strong> methods build a dendrogram you can cut at any granularity afterward.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          Grouping retail customers by purchasing behaviour: there is no "correct" set of segments handed to you. Clustering might reveal three natural groups (bargain-hunters, loyalists, occasional big spenders) — but only if features are scaled so that no single high-range feature dictates every grouping.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Sneha</strong>, an SF analyst, is asked to segment a client's 50,000 customers for a marketing campaign. There are no predefined segments — the client wants the data to reveal natural groups. Features include annual revenue (in the millions), visit frequency, average basket size, and a 1–5 satisfaction score.</p>
+        <p class="prose">Clustering is the right family of method, but the features live on wildly different scales, and Sneha must decide how many segments to produce and justify them. Get the preprocessing wrong and the "segments" will be meaningless — yet the algorithm will still hand her tidy-looking groups.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> Clustering always returns clusters. There is no error message when they are driven by an artefact of scale rather than real behaviour — the danger is confident, well-formatted nonsense.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Scale the features first.</strong> Sneha standardises revenue, frequency, basket size, and satisfaction so each contributes comparably to the distance metric, rather than letting million-scale revenue dominate.</p>
+        <p class="prose"><strong>2. Choose the cluster count with evidence.</strong> She uses the elbow and silhouette heuristics, cross-checked against what is actionable for the marketing team — landing on a count that is both statistically reasonable and operationally useful.</p>
+        <p class="prose"><strong>3. Profile and validate the clusters.</strong> She describes each segment in business terms and confirms the groups are stable and interpretable before handing them over.</p>
+        <div class="callout callout-good"><strong>The result:</strong> segments grounded in genuine multi-feature behaviour, with a defensible justification for both the preprocessing and the number of groups.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Clustering on unscaled features.</strong> Leaving revenue in millions next to a 1–5 score makes the distance metric almost entirely about revenue. The "segments" become revenue bands, and satisfaction and frequency are effectively ignored.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Picking the cluster count arbitrarily.</strong> Choosing "let's do 5 segments because marketing likes 5" with no elbow/silhouette check produces groups that may not reflect any real structure.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Treating clusters as ground truth.</strong> Presenting clustering output as if it were objective fact, without profiling or stability checks, hides that a different metric or scaling would have produced different groups.</div>`
+    }
+  },
+  {
+    id: 's2', title: 'K-means & GMMs',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>K-means</strong> partitions data by alternating two steps: assign each point to its nearest centroid, then move each centroid to the mean of its assigned points — repeating until stable. It is fast and simple, but it only finds a <strong>local optimum</strong> (so initialisation matters) and it implicitly assumes <strong>spherical, similarly sized clusters</strong> because it uses Euclidean distance to a centre.</p>
+        <p class="prose">A <strong>Gaussian mixture model (GMM)</strong> generalises this: each cluster is a Gaussian with its own shape (covariance), and points get <strong>soft</strong> probabilistic memberships rather than hard assignments. This handles elliptical, unequal clusters that k-means cannot.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          Two overlapping customer groups form stretched, diagonal blobs. K-means slices them with a straight boundary through the overlap, misassigning the tails. A GMM fits two tilted ellipses and assigns each point a probability of membership — capturing both the shape and the uncertainty in the overlap.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Arjun</strong> is clustering sensor readings from machines into operating regimes. The natural regimes are elongated and unequal in size — some common, some rare. He reaches for k-means because it is the default he knows, runs it once with a random start, and gets a strange partition.</p>
+        <p class="prose">He is one decision away from concluding "there is no structure here." But the oddity comes from k-means' assumptions and a single unlucky initialisation, not from the data. How he diagnoses this determines whether he finds the real regimes or abandons a solvable problem.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> k-means fails quietly on non-spherical clusters and unlucky starts — it returns a clean-looking but wrong answer, easily mistaken for "no signal."</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Use smart initialisation and multiple restarts.</strong> Arjun runs k-means++ with several restarts and keeps the best result, guarding against bad local optima.</p>
+        <p class="prose"><strong>2. Match the model to the cluster shape.</strong> Recognising elongated, unequal regimes, he switches to a GMM with full covariance, which can represent tilted, differently sized clusters and gives soft memberships for ambiguous readings.</p>
+        <p class="prose"><strong>3. Validate before concluding.</strong> Only after appropriate methods and restarts does he judge whether structure exists, rather than trusting one k-means run.</p>
+        <div class="callout callout-good"><strong>The result:</strong> operating regimes that match the true shape of the data, with uncertainty captured for borderline readings.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — A single random initialisation.</strong> One k-means run can land in a poor local optimum. Trusting it without restarts (or k-means++) risks reporting a bad partition as the answer.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Forcing k-means onto non-spherical clusters.</strong> Elongated or unequal clusters violate k-means' assumptions; insisting on it produces straight-line splits through groups that a GMM would model correctly.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Declaring "no structure" prematurely.</strong> Concluding the data has no clusters from one run of the wrong method abandons a problem that better tools would solve.</div>`
+    }
+  },
+  {
+    id: 's3', title: 'Principal component analysis',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>Principal component analysis (PCA)</strong> finds new orthogonal axes — the <strong>principal components</strong> — aligned with the directions of greatest variance in the data. Projecting onto the top few components reduces dimensionality while keeping as much variance as possible. It is <strong>unsupervised</strong>: it uses only the feature covariance structure and ignores any labels.</p>
+        <p class="prose">Because PCA is variance-driven, features must usually be <strong>standardised first</strong>, or a single large-range feature dominates the components. Its crucial limitation: high variance is not the same as usefulness — the directions PCA keeps need not be the ones that separate your classes.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          A dataset has 50 correlated sensor features. PCA reveals that the first 5 components explain 92% of the variance, so the data effectively lives in ~5 dimensions. Modelling on those 5 components is faster and less noisy — provided the discarded directions really were unimportant for the task.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Divya</strong> has a 200-feature dataset and a two-class problem (fraud vs legitimate). Training is slow and noisy, so she applies PCA to compress the features, keeps enough components to explain 95% of variance, and feeds those into her classifier.</p>
+        <p class="prose">To her surprise, classification gets <em>worse</em>. The reduction was statistically sound — but PCA optimised for variance, not for telling the two classes apart. Whether Divya understands this distinction decides if she fixes the pipeline or wrongly blames the classifier.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> PCA can faithfully preserve 95% of variance while quietly discarding the one low-variance direction that actually separated fraud from legitimate.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Standardise before PCA.</strong> Divya scales all 200 features so the components reflect correlation structure rather than raw magnitude.</p>
+        <p class="prose"><strong>2. Validate downstream, not just variance.</strong> She checks classification performance on held-out data as she varies the number of components, rather than assuming "95% variance retained" means "information for the task retained."</p>
+        <p class="prose"><strong>3. Consider supervised reduction when separation matters.</strong> Because the goal is class separation, she compares PCA against a label-aware method (e.g. LDA) or keeps PCA only where it demonstrably helps the classifier.</p>
+        <div class="callout callout-good"><strong>The result:</strong> a dimensionality-reduction step chosen for its effect on the actual task, not merely for variance explained.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Equating variance with usefulness.</strong> Keeping components purely by variance explained can throw away a low-variance but highly discriminative direction, hurting the very task PCA was meant to help.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Skipping standardisation.</strong> Running PCA on unscaled features lets one large-range feature dominate every component, so the reduction reflects units, not structure.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Blaming the classifier.</strong> Concluding the model is weak when the real culprit is a variance-driven reduction that discarded the signal misdirects all the debugging effort.</div>`
+    }
+  },
+  {
+    id: 's4', title: 'Manifold learning',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>Manifold learning</strong> rests on the idea that high-dimensional data often lies on or near a lower-dimensional curved surface — a <strong>manifold</strong> — embedded in the high-dimensional space. Non-linear methods like <strong>Isomap</strong> and <strong>t-SNE</strong> try to "unfold" that surface, capturing structure that a linear method like PCA cannot.</p>
+        <p class="prose">These methods are powerful for <em>visualisation</em>, but come with caveats. <strong>t-SNE</strong> in particular preserves <em>local</em> neighbourhoods, not global geometry: the sizes of clusters and the distances between them in a t-SNE plot are not reliable, and results depend on settings like perplexity and on the random seed.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          The classic "Swiss roll" is a 2-D sheet curled through 3-D space. PCA, being linear, flattens it and mixes far-apart points. Isomap follows distances <em>along</em> the rolled surface and unrolls it into the true 2-D layout — recovering structure PCA destroys.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Karan</strong> uses t-SNE to visualise high-dimensional embeddings of product reviews. The plot shows several clusters, with two of them sitting far apart from the rest. It is a compelling picture, and stakeholders want a takeaway.</p>
+        <p class="prose">Karan is tempted to report that those two groups are "far more different from each other than the others." But t-SNE distances do not mean that. Whether he frames the visualisation honestly — or over-reads its geometry — determines if his conclusion is sound or misleading.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> t-SNE plots are visually persuasive precisely where they are least trustworthy — in the apparent distances and sizes between clusters.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Interpret only what the method preserves.</strong> Karan reads t-SNE as evidence of <em>local</em> grouping — "these reviews form coherent neighbourhoods" — not as a measure of how different clusters are.</p>
+        <p class="prose"><strong>2. Check robustness.</strong> He runs t-SNE at several perplexity values and seeds, and confirms the cluster <em>membership</em> is stable even though the layout shifts.</p>
+        <p class="prose"><strong>3. Quantify claims with real metrics.</strong> For any claim about how different two groups are, he goes back to the original high-dimensional space and computes an actual distance or separation measure.</p>
+        <div class="callout callout-good"><strong>The result:</strong> a visualisation used for what it is good at — revealing local structure — with quantitative claims backed by the original data, not the plot.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Reading t-SNE distances literally.</strong> Treating the gap between two clusters as a measure of how different they are misuses a method that does not preserve global distances.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Trusting a single run.</strong> Drawing conclusions from one perplexity and one seed ignores that the layout can change substantially between runs.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Inferring cluster importance from size.</strong> The apparent area of a cluster in a t-SNE plot is an artefact, not a measure of how many points or how much weight it carries.</div>`
+    }
+  },
+  {
+    id: 's5', title: 'Semi-supervised learning',
+    concept: {
+      heading: 'The concept',
+      html: `
+        <p class="prose"><strong>Semi-supervised learning</strong> combines a small amount of <strong>labelled</strong> data with a large amount of <strong>unlabelled</strong> data. It is attractive because labels are often expensive while raw data is cheap and plentiful — so exploiting the unlabelled data can lift performance well beyond what the few labels alone allow.</p>
+        <p class="prose">Most methods lean on the <strong>cluster/manifold assumption</strong>: points close together, or on the same data structure, probably share a label. That lets unlabelled data shape decision boundaries. But the help is conditional — <strong>self-training</strong> can backfire if the model feeds its own confident-but-wrong guesses back as if they were truth.</p>
+        <div class="example-block">
+          <div class="ex-label">Worked example</div>
+          You have 500 labelled medical images and 50,000 unlabelled ones. A purely supervised model on 500 images is shaky. Using the unlabelled images to learn the shape of the data — then propagating the few labels along that structure — can sharpen the boundary, <em>if</em> similar images really do share diagnoses.
+        </div>`
+    },
+    scenario: {
+      heading: 'The scenario',
+      html: `
+        <p class="prose"><strong>Nisha</strong> has 800 labelled support tickets and 40,000 unlabelled ones. Labelling more is costly, so she tries self-training: the model pseudo-labels the unlabelled tickets, retrains on the combined set, and repeats over several rounds.</p>
+        <p class="prose">Over successive rounds, validation accuracy drifts <em>downward</em>. The technique is legitimate, but Nisha accepted every pseudo-label regardless of confidence — letting the model's mistakes feed back and compound. Her handling of pseudo-label quality is the whole ballgame.</p>
+        <div class="callout"><strong>Why this is harder than it looks:</strong> self-training can reinforce a model's own errors (confirmation bias), so "more data" can quietly make the model worse rather than better.</div>`
+    },
+    ideal: {
+      heading: 'The ideal approach',
+      html: `
+        <p class="prose"><strong>1. Threshold on confidence.</strong> Nisha only adds pseudo-labels above a high confidence bar, keeping uncertain predictions out of the training set.</p>
+        <p class="prose"><strong>2. Hold out a clean validation set.</strong> She keeps a labelled validation set that is never pseudo-labelled, and watches it each round to detect degradation early.</p>
+        <p class="prose"><strong>3. Stop when validation drops.</strong> Rather than trusting "more rounds = better," she stops self-training the moment validation performance turns down, and sanity-checks that the cluster assumption actually holds for her tickets.</p>
+        <div class="callout callout-good"><strong>The result:</strong> unlabelled data that genuinely improves the model, with a guardrail that catches error reinforcement before it spreads.</div>`
+    },
+    avoid: {
+      heading: 'What not to do',
+      html: `
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Accepting all pseudo-labels.</strong> Feeding back low-confidence and wrong pseudo-labels without a threshold lets the model train on its own mistakes, compounding errors round after round.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — No clean validation set.</strong> Without a held-out labelled set that is never pseudo-labelled, degradation is invisible until it is severe.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Assuming more rounds always help.</strong> Treating self-training as monotonically beneficial, and running it indefinitely, drives the model past the point where unlabelled data stopped helping.</div>`
+    }
+  }
+];
+
+// ── Build section panels from data + question bank ───────────────────────────
+function bankFor(sectionKey) {
+  try { return (window.DL_QUESTION_BANK[BANK_KEY] || {})[sectionKey] || []; }
+  catch(e) { return []; }
+}
+
+function buildSections() {
+  const root = document.getElementById('sectionsRoot');
+  SECTION_DATA.forEach(function(sec, idx) {
+    const secNum = idx + 1;
+    const questions = bankFor(sec.id);
+    const panel = document.createElement('section');
+    panel.className = 'section-panel' + (secNum === 1 ? ' active' : '');
+    panel.id = 'section-' + secNum;
+
+    const tabs = [
+      { key:'concept',  label:'Concept',  data:sec.concept  },
+      { key:'scenario', label:'Scenario', data:sec.scenario },
+      { key:'ideal',    label:'Ideal approach', data:sec.ideal },
+      { key:'avoid',    label:'What not to do',  data:sec.avoid }
+    ];
+
+    let tabsBtns = '';
+    tabs.forEach(function(t, ti) {
+      tabsBtns += '<button class="tab-btn' + (ti===0?' active':'') + '" onclick="showTab(' + secNum + ',' + (ti+1) + ')">'
+        + '<span class="num">' + (ti+1) + '</span> ' + t.label + '</button>';
+    });
+    tabsBtns += '<button class="tab-btn" onclick="showTab(' + secNum + ',5)"><span class="num">5</span> Check understanding</button>';
+
+    let panes = '';
+    tabs.forEach(function(t, ti) {
+      panes += '<div class="tab-pane' + (ti===0?' active':'') + '" id="pane-' + secNum + '-' + (ti+1) + '">'
+        + '<div class="tab-label">' + t.label + '</div>'
+        + '<div class="tab-heading">' + t.data.heading + '</div>'
+        + t.data.html
+        + '<div class="divider"></div>'
+        + '<div class="tab-nav-row"><span></span><button class="continue-btn" onclick="showTab(' + secNum + ',' + (ti+2) + ')">Continue →</button></div>'
+        + '</div>';
+    });
+
+    // Quiz pane
+    let qHtml = '';
+    questions.forEach(function(q, qi) {
+      let opts = '';
+      q.options.forEach(function(opt, oi) {
+        opts += '<label class="option"><input type="radio" name="s' + secNum + '_q' + (qi+1) + '" value="' + oi + '"> ' + opt + '</label>';
+      });
+      qHtml += '<div class="question-block">'
+        + '<div class="q-num">Question ' + (qi+1) + ' of ' + questions.length + '</div>'
+        + '<div class="q-text">' + q.q + '</div>'
+        + '<div class="options">' + opts + '</div>'
+        + '</div>';
+    });
+
+    panes += '<div class="tab-pane" id="pane-' + secNum + '-5">'
+      + '<div class="tab-label">Check understanding</div>'
+      + '<div class="tab-heading">Check your understanding</div>'
+      + '<div class="questions-wrap" id="questionsWrap-' + secNum + '">'
+      + '<p class="assessment-sub">Answer all ' + questions.length + ' questions to complete this section. Questions draw on all four tabs, including the “what not to do” practices. Your answers are saved.</p>'
+      + qHtml
+      + '<button class="submit-btn" id="submitBtn-' + secNum + '" disabled>Submit answers</button>'
+      + '<div class="submit-note" id="submitNote-' + secNum + '">Select an answer for each question to submit.</div>'
+      + '</div>'
+      + '<div class="submitted-wrap hidden" id="submittedWrap-' + secNum + '">'
+      + '<div class="submitted-icon">✓</div><div class="submitted-title">Section complete</div>'
+      + '<div class="submitted-body">Your answers have been recorded and this section is marked complete.</div>'
+      + '<button class="ghost-btn redo-btn" id="redoBtn-' + secNum + '" style="margin-top:14px;">&#x21BA; Redo section</button>'
+      + '</div>'
+      + '</div>';
+
+    panel.innerHTML = '<div class="tabs-wrap"><div class="tabs">' + tabsBtns + '</div></div>'
+      + '<div class="tab-body">' + panes + '</div>';
+    root.appendChild(panel);
+  });
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function showSection(n) {
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.section-pill').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + n)?.classList.add('active');
+  document.querySelector('.section-pill[data-sec="' + n + '"]')?.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showTab(sec, t) {
+  const panel = document.getElementById('section-' + sec);
+  if (!panel) return;
+  panel.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  panel.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  panel.querySelector('#pane-' + sec + '-' + t)?.classList.add('active');
+  panel.querySelectorAll('.tab-btn')[t-1]?.classList.add('active');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+function loadSec(secNum) {
+  const k = window.dlLearnerKey('s' + secNum);
+  try { return JSON.parse(localStorage.getItem(k)) || {}; } catch(e) { return {}; }
+}
+function saveSec(secNum, s) {
+  const k = window.dlLearnerKey('s' + secNum);
+  localStorage.setItem(k, JSON.stringify(s));
+}
+function allSectionsDone() {
+  for (let i = 1; i <= SECTION_DATA.length; i++) {
+    if (!loadSec(i).complete) return false;
+  }
+  return true;
+}
+function updateModuleProgress() {
+  let done = 0;
+  for (let i = 1; i <= SECTION_DATA.length; i++) {
+    if (loadSec(i).complete) {
+      done++;
+      document.querySelector('.section-pill[data-sec="' + i + '"]')?.classList.add('done');
+    }
+  }
+  const el = document.getElementById('moduleProgress');
+  if (el) el.textContent = done + ' of ' + SECTION_DATA.length + ' sections complete';
+  if (done >= SECTION_DATA.length) cpWriteModuleComplete();
+}
+
+function wireSection(secNum) {
+  const questions = bankFor('s' + secNum);
+  const qCount = questions.length;
+  const submitBtn = document.getElementById('submitBtn-' + secNum);
+  const note = document.getElementById('submitNote-' + secNum);
+
+  function checkAll() {
+    let answered = 0;
+    for (let i = 1; i <= qCount; i++) {
+      if (document.querySelector('input[name="s' + secNum + '_q' + i + '"]:checked')) answered++;
+    }
+    const all = answered === qCount;
+    if (submitBtn) submitBtn.disabled = !all;
+    if (note) note.textContent = all ? 'Ready to submit.' : 'Select an answer for each question to submit.';
+  }
+
+  document.querySelectorAll('#questionsWrap-' + secNum + ' input[type="radio"]').forEach(function(r) {
+    r.addEventListener('change', checkAll);
+  });
+
+  function showSubmitted() {
+    document.getElementById('questionsWrap-' + secNum)?.classList.add('hidden');
+    document.getElementById('submittedWrap-' + secNum)?.classList.remove('hidden');
+  }
+
+  if (submitBtn) submitBtn.addEventListener('click', function() {
+    const answers = {};
+    for (let i = 1; i <= qCount; i++) {
+      const v = document.querySelector('input[name="s' + secNum + '_q' + i + '"]:checked')?.value;
+      answers['q' + i] = v != null ? parseInt(v, 10) : null;
+    }
+    const correct = {};
+    questions.forEach(function(q, qi) { correct['q' + (qi+1)] = q.correctIndex; });
+    let score = 0;
+    for (let i = 1; i <= qCount; i++) { if (answers['q'+i] === correct['q'+i]) score++; }
+
+    const s = loadSec(secNum);
+    s.sectionId   = 's' + secNum;
+    s.answers     = answers;
+    s.correct     = correct;
+    s.score       = score;
+    s.total       = qCount;
+    s.submittedAt = new Date().toISOString();
+    s.complete    = true;
+    saveSec(secNum, s);
+
+    showSubmitted();
+    document.querySelector('.section-pill[data-sec="' + secNum + '"]')?.classList.add('done');
+    updateModuleProgress();
+  });
+
+  const redo = document.getElementById('redoBtn-' + secNum);
+  if (redo) redo.addEventListener('click', function() {
+    const k = window.dlLearnerKey('s' + secNum);
+    localStorage.removeItem(k);
+    document.getElementById('questionsWrap-' + secNum)?.classList.remove('hidden');
+    document.getElementById('submittedWrap-' + secNum)?.classList.add('hidden');
+    document.querySelectorAll('#questionsWrap-' + secNum + ' input[type="radio"]').forEach(function(r){ r.checked = false; });
+    if (submitBtn) submitBtn.disabled = true;
+    if (note) note.textContent = 'Select an answer for each question to submit.';
+    document.querySelector('.section-pill[data-sec="' + secNum + '"]')?.classList.remove('done');
+    updateModuleProgress();
+  });
+
+  // Restore submitted state
+  if (loadSec(secNum).submittedAt) showSubmitted();
+}
+
+document.addEventListener('learnerReady', function() {
+  cpEnsureModuleStarted();
+  for (let i = 1; i <= SECTION_DATA.length; i++) wireSection(i);
+  updateModuleProgress();
+});
+
+// ── courseProgress (uid-keyed; module map) ───────────────────────────────────
+function cpNow() {
+  var d = new Date(); var pad = function(n){ return String(n).padStart(2,'0'); };
+  return { date: d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),
+           time: pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()), ms: d.getTime() };
+}
+function cpFmtDuration(ms) {
+  if (ms == null || ms < 0) return null;
+  var s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+  if (h > 0) return h+'h '+m+'m '+sec+'s';
+  if (m > 0) return m+'m '+sec+'s';
+  return sec+'s';
+}
+function cpDb() { return firebase.firestore(window._fbApp); }
+function cpDocRef() { return cpDb().collection('courseProgress').doc(window._learnerUid); }
+function cpReady() { return window._fbApp && window._learnerUid && window._learnerUid !== 'anon'; }
+
+function cpEnsureModuleStarted() {
+  if (!cpReady()) return;
+  var ref = cpDocRef();
+  ref.get().then(function(snap){
+    var data = snap.exists ? (snap.data() || {}) : {};
+    var course = (data.courses && data.courses[CP_COURSE_ID]) || {};
+    var mods = course.modules || {};
+    var t = cpNow();
+    var update = { email: window._learnerEmail || null, name: window._learnerEmail || null, courses: {} };
+    update.courses[CP_COURSE_ID] = { moduleInProgress: MODULE_ID, modules: {} };
+    if (!course.courseStartedOn) { update.courses[CP_COURSE_ID].courseStartedOn = t.date; update.courses[CP_COURSE_ID].courseStartedAt = t.time; }
+    if (!mods[MODULE_ID] || !mods[MODULE_ID].startedOn) {
+      update.courses[CP_COURSE_ID].modules[MODULE_ID] = { startedOn: t.date, startedAt: t.time };
+    }
+    ref.set(update, { merge: true }).catch(function(e){ console.warn('[courseProgress] start write failed:', e.message); });
+  }).catch(function(e){ console.warn('[courseProgress] start read failed:', e.message); });
+}
+
+function cpWriteModuleComplete() {
+  if (!cpReady()) return;
+  var ref = cpDocRef();
+  ref.get().then(function(snap){
+    var data = snap.exists ? (snap.data() || {}) : {};
+    var course = (data.courses && data.courses[CP_COURSE_ID]) || {};
+    var mods = course.modules || {};
+    if (mods[MODULE_ID] && mods[MODULE_ID].completedOn) return; // idempotent
+    var t = cpNow();
+    var startMs = null, mEntry = mods[MODULE_ID];
+    if (mEntry && mEntry.startedOn && mEntry.startedAt) startMs = new Date(mEntry.startedOn + 'T' + mEntry.startedAt).getTime();
+    var moduleTimeTaken = startMs != null ? cpFmtDuration(t.ms - startMs) : null;
+
+    var courseUpdate = { modules: {} };
+    courseUpdate.modules[MODULE_ID] = { completedOn: t.date, completedAt: t.time, timeTaken: moduleTimeTaken };
+    if (course.moduleInProgress === MODULE_ID) courseUpdate.moduleInProgress = null;
+
+    var completedCount = 0;
+    CP_MODULE_IDS.forEach(function(id){
+      if (id === MODULE_ID) { completedCount++; return; }
+      if (mods[id] && mods[id].completedOn) completedCount++;
+    });
+    if (completedCount >= CP_MODULE_IDS.length && !course.courseCompletedOn) {
+      courseUpdate.courseCompletedOn = t.date; courseUpdate.courseCompletedAt = t.time;
+      if (course.courseStartedOn && course.courseStartedAt) {
+        var cStart = new Date(course.courseStartedOn + 'T' + course.courseStartedAt).getTime();
+        courseUpdate.timeTaken = cpFmtDuration(t.ms - cStart);
+      }
+    }
+    var update = { email: window._learnerEmail || null, name: window._learnerEmail || null, courses: {} };
+    update.courses[CP_COURSE_ID] = courseUpdate;
+    ref.set(update, { merge: true }).catch(function(e){ console.warn('[courseProgress] complete write failed:', e.message); });
+  }).catch(function(e){ console.warn('[courseProgress] complete read failed:', e.message); });
+}
+
+// Cache busting on internal links
+(function() {
+  function addVersion(url) {
+    if (!url || url.startsWith('http') || url.startsWith('#') || url.startsWith('mailto')) return url;
+    if (!url.endsWith('.html') && !url.includes('.html?')) return url;
+    const sep = url.includes('?') ? '&' : '?';
+    if (url.includes('v=' + CACHE_VERSION)) return url;
+    return url + sep + 'v=' + CACHE_VERSION;
+  }
+  document.querySelectorAll('a[href]').forEach(a => { a.href = addVersion(a.getAttribute('href')); });
+})();
+
+// Build panels immediately (content is static; auth gates the overlay only)
+buildSections();
+</script>
+
+</body>
+</html>
