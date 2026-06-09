@@ -722,6 +722,424 @@ window.DL_QUESTION_BANK = {
         difficulty: 'hard'
       }
     ]
+  },
+
+  // ============ MODULE 3: Deep Neural Networks (24% weight) ============
+  m3: {
+
+    // ---- 5.3.1 Weights and layers ----
+    s1: [
+      {
+        id: 'dl-m3-s1-i1',
+        q: 'In a fully connected neural network layer, what does each weight represent?',
+        options: [
+          'The number of neurons in the layer',
+          'The strength of the connection between one input and one neuron',
+          'The learning rate for that layer',
+          'The activation function applied to the output'
+        ],
+        correctIndex: 1,
+        explanation: 'Each weight scales the contribution of a specific input to a specific neuron; the network learns these connection strengths during training.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s1-i2',
+        q: 'What is the role of the bias term in a neuron?',
+        options: [
+          'It sets the learning rate',
+          'It shifts the activation threshold, letting the neuron fire even when all inputs are zero',
+          'It normalises the inputs',
+          'It counts the number of layers'
+        ],
+        correctIndex: 1,
+        explanation: 'The bias is an additive term that shifts the weighted sum, allowing the neuron to activate independently of the input being zero — increasing the model\'s flexibility.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s1-i3',
+        q: 'Why does stacking more layers (depth) help a network represent complex functions?',
+        options: [
+          'It reduces the number of parameters needed',
+          'Each layer composes features from the previous one, building hierarchical representations from simple to complex',
+          'Depth guarantees faster training',
+          'It removes the need for activation functions'
+        ],
+        correctIndex: 1,
+        explanation: 'Deeper layers compose lower-level features into higher-level ones (e.g. edges to shapes to objects), letting the network represent complex hierarchical patterns efficiently.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s1-i4',
+        q: 'True or False: A deep network built entirely from linear layers with no non-linear activations can represent more complex functions than a single linear layer.',
+        options: [
+          'True — more layers always add representational power',
+          'False — composing linear layers yields just another linear function, so without non-linearities depth adds nothing',
+          'True — but only if the layers are very wide',
+          'False — linear layers cannot be stacked at all'
+        ],
+        correctIndex: 1,
+        explanation: 'A composition of linear transformations is itself linear. Without non-linear activations between layers, a deep linear network collapses to a single equivalent linear layer.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s1-i5',
+        q: 'A practitioner initialises every weight in a network to the same constant value and finds all neurons in a layer learn identical features. What is the "what not to do" lesson?',
+        options: [
+          'Constant initialisation is fine; the issue is the learning rate',
+          'Identical weights create symmetric neurons that receive identical gradients and never differentiate — weights must be initialised randomly to break symmetry',
+          'They should have used more layers',
+          'Bias terms should also be constant to fix it'
+        ],
+        correctIndex: 1,
+        explanation: 'If neurons in a layer start identical, they get identical gradients and stay identical forever. Random initialisation breaks this symmetry so neurons can learn different features.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.3.2 Activation functions ----
+    s2: [
+      {
+        id: 'dl-m3-s2-i1',
+        q: 'What is the primary purpose of a non-linear activation function?',
+        options: [
+          'To speed up matrix multiplication',
+          'To introduce non-linearity so the network can model complex, non-linear relationships',
+          'To reduce the number of weights',
+          'To normalise the input data'
+        ],
+        correctIndex: 1,
+        explanation: 'Non-linear activations let stacked layers represent non-linear functions; without them, depth provides no extra representational power.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s2-i2',
+        q: 'What is a key advantage of ReLU over the sigmoid activation in deep networks?',
+        options: [
+          'ReLU always outputs values between 0 and 1',
+          'ReLU does not saturate for positive inputs, mitigating vanishing gradients and training faster',
+          'ReLU is smooth and differentiable everywhere',
+          'ReLU guarantees no dead neurons'
+        ],
+        correctIndex: 1,
+        explanation: 'ReLU passes positive values unchanged, so its gradient does not shrink toward zero for large positive inputs, helping gradients flow in deep networks — unlike sigmoid, which saturates.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s2-i3',
+        q: 'What is the "dying ReLU" problem?',
+        options: [
+          'ReLU outputs grow without bound and overflow',
+          'Neurons that always output zero (because their input stays negative) stop receiving gradient and never recover',
+          'ReLU makes the network too slow',
+          'ReLU only works in the final layer'
+        ],
+        correctIndex: 1,
+        explanation: 'If a ReLU neuron\'s pre-activation stays negative, it outputs zero and its gradient is zero, so it never updates — it is effectively dead. Variants like Leaky ReLU address this.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s2-i4',
+        q: 'True or False: The sigmoid activation is prone to vanishing gradients in deep networks because its derivative is small when inputs are large in magnitude.',
+        options: [
+          'False — sigmoid gradients are constant',
+          'True — sigmoid saturates for large positive or negative inputs, where its derivative approaches zero, shrinking gradients through deep layers',
+          'True — but only in the output layer',
+          'False — sigmoid never saturates'
+        ],
+        correctIndex: 1,
+        explanation: 'Sigmoid flattens for large-magnitude inputs, so its derivative nears zero there. Multiplying many such small derivatives through deep layers makes gradients vanish.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s2-i5',
+        q: 'A team builds a 20-layer network using sigmoid activations throughout, and training stalls because early-layer gradients are nearly zero. What is the anti-pattern and fix?',
+        options: [
+          'The network is too small; add more sigmoid layers',
+          'Using saturating activations (sigmoid) throughout a deep network causes vanishing gradients; switching to non-saturating activations like ReLU (and good initialisation) is the fix',
+          'They should remove all activation functions',
+          'Sigmoid is fine; the learning rate just needs to be zero'
+        ],
+        correctIndex: 1,
+        explanation: 'Sigmoids saturate and their small derivatives multiply to near-zero gradients in deep stacks. ReLU-family activations plus proper initialisation (and normalisation) keep gradients flowing.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.3.3 Regularization and normalization ----
+    s3: [
+      {
+        id: 'dl-m3-s3-i1',
+        q: 'What problem does regularisation primarily address?',
+        options: [
+          'Slow matrix multiplication',
+          'Overfitting — it discourages the model from fitting noise in the training data',
+          'Vanishing gradients',
+          'Insufficient training data'
+        ],
+        correctIndex: 1,
+        explanation: 'Regularisation techniques constrain model complexity so it generalises better, reducing overfitting to training-set noise.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s3-i2',
+        q: 'How does dropout regularise a neural network?',
+        options: [
+          'It deletes layers permanently after training',
+          'It randomly deactivates a fraction of neurons during each training step, preventing co-adaptation and forcing redundancy',
+          'It reduces the learning rate over time',
+          'It removes the bias terms'
+        ],
+        correctIndex: 1,
+        explanation: 'Dropout randomly zeroes a fraction of activations each training step, so neurons cannot rely on specific others — encouraging robust, redundant features that generalise better.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s3-i3',
+        q: 'What does batch normalisation do?',
+        options: [
+          'It removes outliers from the dataset',
+          'It normalises layer inputs using batch statistics, stabilising and speeding up training',
+          'It increases the batch size automatically',
+          'It replaces the activation function'
+        ],
+        correctIndex: 1,
+        explanation: 'Batch normalisation standardises a layer\'s inputs using the current mini-batch\'s mean and variance, reducing internal covariate shift and allowing higher learning rates and faster, more stable training.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s3-i4',
+        q: 'True or False: Dropout should be active during inference (test time) just as it is during training.',
+        options: [
+          'True — dropout must always be on for consistency',
+          'False — dropout is disabled at inference; the full network is used (with appropriate scaling) so predictions are deterministic',
+          'True — but only for the output layer',
+          'False — dropout is only ever used at inference'
+        ],
+        correctIndex: 1,
+        explanation: 'Dropout is a training-time technique. At inference it is turned off and activations are scaled appropriately so the full network produces stable, deterministic predictions.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s3-i5',
+        q: 'A team adds heavy dropout and strong L2 regularisation to a model that was already underfitting, and performance gets worse on both training and validation sets. What is the "what not to do" lesson?',
+        options: [
+          'Regularisation always helps; they need even more',
+          'Piling on regularisation when the model is underfitting (high bias) further restricts an already-too-simple model — regularisation fixes overfitting, not underfitting',
+          'They should remove the validation set',
+          'Dropout and L2 can never be used together'
+        ],
+        correctIndex: 1,
+        explanation: 'Regularisation combats overfitting. Applying it to an underfitting model increases bias and hurts both training and validation performance. Diagnose bias vs variance before regularising.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.3.4 Loss functions ----
+    s4: [
+      {
+        id: 'dl-m3-s4-i1',
+        q: 'What does a loss function measure?',
+        options: [
+          'The number of layers in the network',
+          'How far the model\'s predictions are from the true targets, giving a signal to minimise',
+          'The speed of training',
+          'The amount of memory used'
+        ],
+        correctIndex: 1,
+        explanation: 'The loss quantifies prediction error; training minimises it, so the choice of loss defines what "good" means for the model.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s4-i2',
+        q: 'Which loss is standard for multi-class classification with a softmax output?',
+        options: [
+          'Mean squared error',
+          'Cross-entropy loss',
+          'Hinge loss',
+          'Mean absolute error'
+        ],
+        correctIndex: 1,
+        explanation: 'Cross-entropy paired with softmax is the standard for multi-class classification; it strongly penalises confident wrong predictions and has well-behaved gradients.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s4-i3',
+        q: 'Why is mean squared error usually a poor choice for classification?',
+        options: [
+          'It is too fast to compute',
+          'It does not align with class probabilities and yields weaker gradients for confident misclassifications, slowing learning compared to cross-entropy',
+          'It can only be used for two classes',
+          'It requires labelled data, unlike cross-entropy'
+        ],
+        correctIndex: 1,
+        explanation: 'MSE treats classification like regression on probabilities; combined with sigmoid/softmax it produces small gradients when the model is confidently wrong, so cross-entropy learns faster and more reliably.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s4-i4',
+        q: 'True or False: The choice of loss function should reflect the task and the cost of different kinds of errors.',
+        options: [
+          'False — any loss works equally well for any task',
+          'True — the loss encodes what the model optimises, so it must match the task and the relative cost of error types',
+          'True — but only for regression tasks',
+          'False — the loss only affects training speed, not behaviour'
+        ],
+        correctIndex: 1,
+        explanation: 'The loss defines the optimisation target. Matching it to the task (and weighting costly error types) directly shapes what the trained model prioritises.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s4-i5',
+        q: 'On a heavily imbalanced fraud-detection task (1% fraud), a team trains with plain accuracy-driven loss; the model predicts "not fraud" for everything and reports 99% accuracy. What is the anti-pattern?',
+        options: [
+          'The model is correct; 99% accuracy is excellent',
+          'Optimising an unweighted loss/metric on imbalanced data lets the majority class dominate; the loss must reflect error costs (e.g. class weighting) and evaluation must use metrics like recall/precision',
+          'They should have used more layers',
+          'Accuracy is always the right metric'
+        ],
+        correctIndex: 1,
+        explanation: 'On extreme imbalance, predicting the majority class yields high accuracy but zero fraud detection. Use class-weighted/focal loss and evaluate with precision/recall, not raw accuracy.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.3.5 Backpropagation ----
+    s5: [
+      {
+        id: 'dl-m3-s5-i1',
+        q: 'What does backpropagation compute?',
+        options: [
+          'The forward predictions of the network',
+          'The gradient of the loss with respect to every weight, by applying the chain rule backward through the network',
+          'The number of neurons to add',
+          'The optimal learning rate'
+        ],
+        correctIndex: 1,
+        explanation: 'Backpropagation efficiently computes the loss gradient for each weight using the chain rule, propagating error signals from the output back through the layers.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s5-i2',
+        q: 'Backpropagation relies on which calculus principle?',
+        options: [
+          'The fundamental theorem of integration',
+          'The chain rule for derivatives of composed functions',
+          'Integration by parts',
+          'L\'Hôpital\'s rule'
+        ],
+        correctIndex: 1,
+        explanation: 'A neural network is a composition of functions; the chain rule lets backprop combine local derivatives layer by layer into the full gradient.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s5-i3',
+        q: 'Why must a forward pass be completed (and intermediate values stored) before the backward pass?',
+        options: [
+          'To free up memory',
+          'The backward pass reuses activations computed in the forward pass to evaluate local gradients via the chain rule',
+          'Because weights change during the forward pass',
+          'To select the loss function'
+        ],
+        correctIndex: 1,
+        explanation: 'Gradients depend on the activations produced in the forward pass, so those intermediate values are cached and reused when propagating gradients backward.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s5-i4',
+        q: 'True or False: Vanishing and exploding gradients are problems that arise during backpropagation through many layers.',
+        options: [
+          'False — gradients are always stable regardless of depth',
+          'True — repeatedly multiplying gradients through many layers can shrink them toward zero (vanishing) or blow them up (exploding)',
+          'True — but only in the forward pass',
+          'False — these only occur with missing data'
+        ],
+        correctIndex: 1,
+        explanation: 'Backprop multiplies many local gradients; if these are consistently small or large, the product vanishes or explodes through deep networks — addressed by normalisation, good init, gradient clipping, and residual connections.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s5-i5',
+        q: 'A team trains a deep RNN, sees the loss become NaN after a few steps, and concludes the framework is broken. What is the "what not to do" lesson?',
+        options: [
+          'The framework is indeed broken; switch tools',
+          'NaN losses commonly signal exploding gradients; rather than blaming the tools, apply gradient clipping, lower the learning rate, or improve initialisation',
+          'They should train for more steps and it will recover',
+          'NaN is normal and can be ignored'
+        ],
+        correctIndex: 1,
+        explanation: 'Exploding gradients in deep/recurrent nets drive weights and loss to NaN. The fix is gradient clipping, a smaller learning rate, and better initialisation — not assuming the library is faulty.',
+        difficulty: 'hard'
+      }
+    ],
+
+    // ---- 5.3.6 Training and optimization ----
+    s6: [
+      {
+        id: 'dl-m3-s6-i1',
+        q: 'What does an optimiser like stochastic gradient descent (SGD) do with the gradients from backpropagation?',
+        options: [
+          'It computes the loss function',
+          'It updates the weights by stepping them in the direction that reduces the loss, scaled by the learning rate',
+          'It selects the activation function',
+          'It increases the number of layers'
+        ],
+        correctIndex: 1,
+        explanation: 'The optimiser uses gradients to update weights, moving them opposite the gradient (downhill on the loss) by an amount governed by the learning rate.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s6-i2',
+        q: 'What is the effect of a learning rate that is far too high?',
+        options: [
+          'Training converges very slowly but smoothly',
+          'Updates overshoot minima, causing the loss to oscillate or diverge rather than settle',
+          'The model trains perfectly with no downside',
+          'Gradients vanish'
+        ],
+        correctIndex: 1,
+        explanation: 'Too-large steps overshoot the loss minimum, making training unstable — the loss bounces around or blows up instead of decreasing steadily.',
+        difficulty: 'easy'
+      },
+      {
+        id: 'dl-m3-s6-i3',
+        q: 'What advantage does the Adam optimiser offer over plain SGD?',
+        options: [
+          'It removes the need for a loss function',
+          'It adapts per-parameter learning rates using running estimates of gradient moments, often converging faster with less manual tuning',
+          'It guarantees the global optimum',
+          'It eliminates the need for gradients'
+        ],
+        correctIndex: 1,
+        explanation: 'Adam maintains adaptive, per-parameter step sizes from running averages of the gradient and its square, typically giving faster, more robust convergence than vanilla SGD.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s6-i4',
+        q: 'True or False: Monitoring only training loss is sufficient to know a model will generalise well.',
+        options: [
+          'True — training loss fully predicts generalisation',
+          'False — a falling training loss with a rising validation loss signals overfitting, so validation performance must also be tracked',
+          'True — but only when using Adam',
+          'False — training loss is irrelevant to training'
+        ],
+        correctIndex: 1,
+        explanation: 'Training loss alone hides overfitting. Watching validation loss reveals when the model stops generalising even as training loss keeps dropping — the basis for early stopping.',
+        difficulty: 'medium'
+      },
+      {
+        id: 'dl-m3-s6-i5',
+        q: 'A team trains for a fixed 500 epochs because "more training is better," ignoring validation. Validation loss bottomed at epoch 80 and rose afterward; the final model is worse than the mid-training one. What is the anti-pattern?',
+        options: [
+          'They should have trained for 1000 epochs',
+          'Training blindly for a fixed long schedule without monitoring validation overfits past the optimum; early stopping (or checkpointing the best validation model) is the fix',
+          'Validation loss is irrelevant to model quality',
+          'They should have removed the optimiser'
+        ],
+        correctIndex: 1,
+        explanation: 'More epochs is not always better. Past the validation minimum the model overfits. Use early stopping or keep the checkpoint with the best validation loss rather than the last epoch.',
+        difficulty: 'hard'
+      }
+    ]
   }
 
 };
