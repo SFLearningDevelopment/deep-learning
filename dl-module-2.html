@@ -312,7 +312,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v1';
+const CACHE_VERSION = '2026-06-09-v3';
 const MODULE_ID    = 'dl_m2';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -333,6 +333,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           Grouping retail customers by purchasing behaviour: there is no "correct" set of segments handed to you. Clustering might reveal three natural groups (bargain-hunters, loyalists, occasional big spenders) — but only if features are scaled so that no single high-range feature dictates every grouping.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of walking into a party where you know no one, and naturally grouping people by how they cluster — a knot near the music, a circle in the kitchen, a few on the balcony. Nobody handed you labels; you inferred the groups from who stands near whom. That is clustering. Now imagine you judged groups only by <strong>height</strong> (one loud feature) and ignored what people were doing or talking about — you'd lump a tall guest by the speakers with a tall guest on the balcony, missing the real groupings. That is what happens when one unscaled feature dominates the "distance" between people.
         </div>`
     },
     scenario: {
@@ -353,9 +357,9 @@ const SECTION_DATA = [
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Clustering on unscaled features.</strong> Leaving revenue in millions next to a 1–5 score makes the distance metric almost entirely about revenue. The "segments" become revenue bands, and satisfaction and frequency are effectively ignored.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Picking the cluster count arbitrarily.</strong> Choosing "let's do 5 segments because marketing likes 5" with no elbow/silhouette check produces groups that may not reflect any real structure.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Treating clusters as ground truth.</strong> Presenting clustering output as if it were objective fact, without profiling or stability checks, hides that a different metric or scaling would have produced different groups.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Clustering on unscaled features.</strong> Leaving revenue in millions next to a 1–5 score makes the distance metric almost entirely about revenue. The "segments" become revenue bands, and satisfaction and frequency are effectively ignored. <strong>How:</strong> distance sums the gaps across all features. A revenue gap of ₹2,000,000 contributes 2,000,000 to the distance while the entire satisfaction range contributes at most 4 — so revenue's raw size decides who lands together, and the other three features are mathematically drowned out.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Picking the cluster count arbitrarily.</strong> Choosing "let's do 5 segments because marketing likes 5" with no elbow/silhouette check produces groups that may not reflect any real structure. <strong>How:</strong> forcing k=5 onto data with, say, 3 genuine groups splits real groups down the middle or merges unrelated ones; the algorithm dutifully returns 5 tidy clusters, but the dividing lines are arbitrary and won't reappear if you re-run on fresh data.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Treating clusters as ground truth.</strong> Presenting clustering output as if it were objective fact, without profiling or stability checks, hides that a different metric or scaling would have produced different groups. <strong>How:</strong> clustering has no answer key — swap Euclidean for cosine distance, or scale features differently, and the membership changes. Without re-running under varied settings to confirm the groups hold, you are presenting one arbitrary slice as if it were the truth.</div>`
     }
   },
   {
@@ -368,6 +372,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           Two overlapping customer groups form stretched, diagonal blobs. K-means slices them with a straight boundary through the overlap, misassigning the tails. A GMM fits two tilted ellipses and assigns each point a probability of membership — capturing both the shape and the uncertainty in the overlap.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Picture dropping a few "team captains" (centroids) randomly onto a playground, then telling every child to join the nearest captain; each captain then walks to the middle of their group, and children re-pick the nearest captain — repeat until nobody moves. That is k-means. Because the captains started in random spots, where they end up depends on where they began — drop them badly and you get lopsided teams (a <strong>local optimum</strong>). Running the whole exercise several times from different random starts and keeping the most balanced outcome is why <strong>multiple restarts</strong> matter. And because each child joins exactly one captain, k-means makes a <strong>hard assignment</strong>; a GMM instead lets a child be "70% team A, 30% team B" — a <strong>soft assignment</strong>.
         </div>`
     },
     scenario: {
@@ -388,9 +396,9 @@ const SECTION_DATA = [
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — A single random initialisation.</strong> One k-means run can land in a poor local optimum. Trusting it without restarts (or k-means++) risks reporting a bad partition as the answer.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Forcing k-means onto non-spherical clusters.</strong> Elongated or unequal clusters violate k-means' assumptions; insisting on it produces straight-line splits through groups that a GMM would model correctly.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Declaring "no structure" prematurely.</strong> Concluding the data has no clusters from one run of the wrong method abandons a problem that better tools would solve.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — A single random initialisation.</strong> One k-means run can land in a poor local optimum. Trusting it without restarts (or k-means++) risks reporting a bad partition as the answer. <strong>How:</strong> k-means only ever moves centroids "downhill" to reduce within-cluster distance, so once it settles it cannot climb back out of a bad arrangement it fell into from an unlucky start. Different starting positions reach different endpoints — running several and keeping the best is the only guard.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Forcing k-means onto non-spherical clusters.</strong> Elongated or unequal clusters violate k-means' assumptions; insisting on it produces straight-line splits through groups that a GMM would model correctly. <strong>How:</strong> k-means assigns each point to the nearest centre by straight-line distance, which carves space into round, equal cells. A long diagonal streak of points gets sliced across its length rather than recognised as one cluster, because its far end is closer to a neighbouring centroid than to its own.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Declaring "no structure" prematurely.</strong> Concluding the data has no clusters from one run of the wrong method abandons a problem that better tools would solve. <strong>How:</strong> a strange-looking partition is evidence about the <em>method and its start</em>, not the data. Until you've tried k-means++ with restarts and a shape-flexible model like a GMM, a messy result can't distinguish "no structure" from "wrong tool, unlucky seed."</div>`
     }
   },
   {
@@ -403,6 +411,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A dataset has 50 correlated sensor features. PCA reveals that the first 5 components explain 92% of the variance, so the data effectively lives in ~5 dimensions. Modelling on those 5 components is faster and less noisy — provided the discarded directions really were unimportant for the task.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Imagine casting a shadow of a 3-D object onto a wall to capture it in 2-D. If you light it from the angle that casts the <em>widest, most spread-out</em> shadow, you preserve the most information about its shape — that widest-spread direction is what PCA's top component finds. But here's the catch PCA can't see: suppose you're trying to tell two nearly-flat coins apart by their thickness. The widest shadow captures their large face (high variance) and flattens away the tiny thickness difference (low variance) — the one detail that actually distinguished them. <strong>High variance ≠ usefulness.</strong>
         </div>`
     },
     scenario: {
@@ -423,9 +435,9 @@ const SECTION_DATA = [
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Equating variance with usefulness.</strong> Keeping components purely by variance explained can throw away a low-variance but highly discriminative direction, hurting the very task PCA was meant to help.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Skipping standardisation.</strong> Running PCA on unscaled features lets one large-range feature dominate every component, so the reduction reflects units, not structure.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Blaming the classifier.</strong> Concluding the model is weak when the real culprit is a variance-driven reduction that discarded the signal misdirects all the debugging effort.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Equating variance with usefulness.</strong> Keeping components purely by variance explained can throw away a low-variance but highly discriminative direction, hurting the very task PCA was meant to help. <strong>How:</strong> PCA ranks directions by spread alone, with no knowledge of your labels. If the feature that separates two classes varies only slightly (like the coin thickness above), PCA files it among the "minor" components and drops it — discarding the exact signal the classifier needed.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Skipping standardisation.</strong> Running PCA on unscaled features lets one large-range feature dominate every component, so the reduction reflects units, not structure. <strong>How:</strong> variance depends on units — a feature measured in grams has 1,000,000× the variance of the same quantity in kilograms. PCA chases the biggest variance, so an unscaled high-range feature captures the top components by sheer numeric size, not by genuine importance.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Blaming the classifier.</strong> Concluding the model is weak when the real culprit is a variance-driven reduction that discarded the signal misdirects all the debugging effort. <strong>How:</strong> the classifier can only work with what it's fed; if PCA already deleted the separating direction upstream, no amount of tuning the model recovers it. The fix is in the preprocessing step, so debugging the classifier searches the wrong place entirely.</div>`
     }
   },
   {
@@ -438,6 +450,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           The classic "Swiss roll" is a 2-D sheet curled through 3-D space. PCA, being linear, flattens it and mixes far-apart points. Isomap follows distances <em>along</em> the rolled surface and unrolls it into the true 2-D layout — recovering structure PCA destroys.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of a flat world map. The Earth is a 3-D sphere, but we flatten it to 2-D so we can read it — that flattening is manifold learning, unrolling a curved surface onto a flat one. But notice the catch every map has: Greenland looks enormous, almost the size of Africa, when it's actually about a fourteenth the size. The flattening <em>preserved local shape</em> (Greenland's coastline is right) but <em>distorted global size and distance</em>. That is exactly the t-SNE caveat: trust which things sit <strong>next to</strong> each other, never how <strong>big</strong> a cluster looks or how <strong>far apart</strong> two clusters appear.
         </div>`
     },
     scenario: {
@@ -458,9 +474,9 @@ const SECTION_DATA = [
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Reading t-SNE distances literally.</strong> Treating the gap between two clusters as a measure of how different they are misuses a method that does not preserve global distances.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Trusting a single run.</strong> Drawing conclusions from one perplexity and one seed ignores that the layout can change substantially between runs.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Inferring cluster importance from size.</strong> The apparent area of a cluster in a t-SNE plot is an artefact, not a measure of how many points or how much weight it carries.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Reading t-SNE distances literally.</strong> Treating the gap between two clusters as a measure of how different they are misuses a method that does not preserve global distances. <strong>How:</strong> t-SNE's objective only tries to keep nearby points nearby; it actively sacrifices global distances to do so. So the space between two clusters is a by-product of the layout algorithm, not a measured dissimilarity — like reading real distances off the Greenland-sized map.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Trusting a single run.</strong> Drawing conclusions from one perplexity and one seed ignores that the layout can change substantially between runs. <strong>How:</strong> t-SNE starts from a random initialisation and is tuned by a "perplexity" setting (roughly, how many neighbours each point considers). Change the seed or perplexity and clusters can rotate, resize, or drift apart — so a claim resting on one run may simply not reproduce.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Inferring cluster importance from size.</strong> The apparent area of a cluster in a t-SNE plot is an artefact, not a measure of how many points or how much weight it carries. <strong>How:</strong> t-SNE expands dense regions and contracts sparse ones to make everything legible, deliberately breaking the link between on-screen area and actual point count — so a visually large blob may hold fewer points than a small tight one.</div>`
     }
   },
   {
@@ -473,6 +489,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           You have 500 labelled medical images and 50,000 unlabelled ones. A purely supervised model on 500 images is shaky. Using the unlabelled images to learn the shape of the data — then propagating the few labels along that structure — can sharpen the boundary, <em>if</em> similar images really do share diagnoses.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Imagine a student given the answers to just 5 problems in a 500-problem book. Using those 5 as anchors, they reason "this new problem looks like one of my solved ones, so the method is probably the same" — spreading confidence outward from the few known answers. That is semi-supervised learning. The danger is <strong>self-training</strong> gone wrong: if the student confidently mis-solves a problem and then treats their own wrong answer as a new "known" anchor, every later problem they reason from it inherits the mistake — the error compounds. That is why you only trust high-confidence guesses and keep a few real answers aside to check yourself against.
         </div>`
     },
     scenario: {
@@ -493,9 +513,9 @@ const SECTION_DATA = [
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Accepting all pseudo-labels.</strong> Feeding back low-confidence and wrong pseudo-labels without a threshold lets the model train on its own mistakes, compounding errors round after round.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — No clean validation set.</strong> Without a held-out labelled set that is never pseudo-labelled, degradation is invisible until it is severe.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Assuming more rounds always help.</strong> Treating self-training as monotonically beneficial, and running it indefinitely, drives the model past the point where unlabelled data stopped helping.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Accepting all pseudo-labels.</strong> Feeding back low-confidence and wrong pseudo-labels without a threshold lets the model train on its own mistakes, compounding errors round after round. <strong>How:</strong> each round, the model's guesses become next round's "truth." A wrong guess accepted at 51% confidence is taught back as a certainty, the model grows more sure of the error, labels more points the same wrong way, and the mistake snowballs — the study-student trusting their own wrong answer.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — No clean validation set.</strong> Without a held-out labelled set that is never pseudo-labelled, degradation is invisible until it is severe. <strong>How:</strong> if you measure success only on the same pool the model is pseudo-labelling, the model and its grader drift together — it looks like it's agreeing with itself. A set of real, untouched answers is the only mirror that reveals accuracy is actually falling.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Assuming more rounds always help.</strong> Treating self-training as monotonically beneficial, and running it indefinitely, drives the model past the point where unlabelled data stopped helping. <strong>How:</strong> early rounds add genuinely easy, correct pseudo-labels and help; later rounds scrape the bottom of the confidence barrel, adding mostly noise. Past the crossover point each extra round adds more error than signal, so "keep going" quietly reverses into harm.</div>`
     }
   }
 ];
