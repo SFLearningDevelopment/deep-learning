@@ -34,6 +34,38 @@
   .module-title { font-size:26px; font-weight:700; color:var(--text); }
   .module-progress { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:10px; }
 
+  /* Refresher primer */
+  .refresh-wrap { max-width:1100px; margin:18px auto 0; padding:0 32px; }
+  .refresh-toggle { width:100%; display:flex; align-items:center; gap:12px; padding:16px 20px; background:var(--blue-light); border:1.5px solid var(--blue-mid); border-left:3px solid var(--blue); border-radius:var(--radius); cursor:pointer; font-family:'Merriweather Sans',sans-serif; font-size:15.5px; font-weight:700; color:var(--blue-dark); text-align:left; transition:background .15s; }
+  .refresh-toggle:hover { background:var(--blue-light); border-color:var(--blue); }
+  .refresh-toggle .rt-icon { font-size:20px; flex-shrink:0; }
+  .refresh-toggle .rt-text { flex:1; }
+  .refresh-toggle .rt-sub { display:block; font-weight:400; font-size:13px; color:var(--text-dim); margin-top:3px; }
+  .refresh-toggle .rt-chev { font-size:13px; font-family:'Source Code Pro',monospace; transition:transform .2s; flex-shrink:0; }
+  .refresh-toggle.open .rt-chev { transform:rotate(180deg); }
+  .refresh-panel { display:none; margin-top:14px; background:var(--bg2); border:1.5px solid var(--border); border-radius:var(--radius); padding:30px 34px; animation:fadeIn .25s ease; }
+  .refresh-panel.open { display:block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+  .refresh-panel h3 { font-size:20px; font-weight:700; color:var(--text); margin:26px 0 10px; }
+  .refresh-panel h3:first-child { margin-top:0; }
+  .refresh-panel h4 { font-size:16px; font-weight:700; color:var(--blue-dark); margin:18px 0 6px; }
+  .refresh-panel p { font-size:16px; color:var(--text-dim); line-height:1.8; margin-bottom:12px; }
+  .refresh-panel p strong { color:var(--text); font-weight:600; }
+  .refresh-panel ul { margin:0 0 14px; padding-left:22px; }
+  .refresh-panel li { font-size:15.5px; color:var(--text-dim); line-height:1.75; margin-bottom:8px; }
+  .refresh-panel li strong { color:var(--text); font-weight:600; }
+  .rf-eg { border-left:3px solid var(--green); background:var(--green-light); padding:12px 16px; border-radius:0 8px 8px 0; margin:8px 0 16px; font-size:14.5px; line-height:1.7; color:var(--text-dim); }
+  .rf-eg .eg-label { font-size:11px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:5px; }
+  .rf-eg strong { color:var(--text); }
+  .rf-table { width:100%; border-collapse:collapse; margin:8px 0 4px; }
+  .rf-table th, .rf-table td { text-align:left; padding:10px 14px; border:1px solid var(--border); font-size:14.5px; vertical-align:top; }
+  .rf-table th { background:var(--bg3); font-weight:700; color:var(--text); }
+  .rf-table td { color:var(--text-dim); line-height:1.65; }
+  .rf-bridge { font-size:16px; color:var(--text-dim); line-height:1.8; margin:6px 0 18px; padding:14px 18px; background:var(--bg3); border-radius:8px; }
+  .rf-bridge strong { color:var(--text); font-weight:600; }
+  .refresh-close { margin-top:20px; padding:10px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .refresh-close:hover { background:var(--bg3); }
+
   /* Section pills */
   .section-pills-wrap { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 40px; overflow-x:auto; }
   .section-pills { display:flex; gap:0; }
@@ -200,6 +232,66 @@
   <div class="module-progress" id="moduleProgress">0 of 5 sections complete</div>
 </div>
 
+<div class="refresh-wrap">
+  <button class="refresh-toggle" id="refreshToggle" onclick="toggleRefresh()">
+    <span class="rt-icon">💡</span>
+    <span class="rt-text">Do you want to refresh your knowledge of Deep Neural Networks?
+      <span class="rt-sub">A quick primer on the fundamentals before you dive into the methods — open it if the sections feel fast-paced.</span>
+    </span>
+    <span class="rt-chev">▼ OPEN</span>
+  </button>
+
+  <div class="refresh-panel" id="refreshPanel">
+    <h3>Deep Neural Networks — the fundamentals</h3>
+    <p>A <strong>neural network</strong> is a function that learns by example. You feed it inputs, it produces an output, you tell it how wrong it was, and it adjusts itself to be a little less wrong next time. Repeat millions of times and it gets good. What makes it powerful is that it learns the right internal features <em>on its own</em>, rather than being hand-programmed with rules.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      To recognise cats, you don't write rules like "if pointy ears and whiskers." You show the network thousands of cat and non-cat images with the right answer attached, and it gradually figures out for itself which visual patterns signal "cat" — learning the rules instead of being told them.
+    </div>
+
+    <h3>The building block: a neuron</h3>
+    <p>The basic unit is a <strong>neuron</strong>. It takes several inputs, multiplies each by a <strong>weight</strong> (how much that input matters), adds them up along with a <strong>bias</strong> (a baseline nudge), and passes the result through an <strong>activation function</strong> that decides how strongly to "fire." The weights and biases are the knobs the network tunes as it learns.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Think of deciding whether to go for a walk. Inputs: is it sunny? do you have time? are you tired? You weight them — weather matters a lot, tiredness somewhat — sum them up, and if the total clears your personal threshold (the bias), you go. A neuron makes exactly that kind of weighted decision.
+    </div>
+
+    <h3>Why "layers" and why "deep"</h3>
+    <p>One neuron is limited. Stack many side by side and you get a <strong>layer</strong>; stack many layers and the network becomes <strong>deep</strong>. The point of depth is <em>hierarchy</em>: early layers learn simple patterns, and later layers combine those into progressively more complex ones.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      In a face recogniser, the first layer might detect edges, the next combines edges into eyes and noses, and a deeper layer combines those into whole faces. Each layer builds on the one before — simple parts assembling into complex wholes, which is what "deep" buys you.
+    </div>
+
+    <h3>How a network actually learns</h3>
+    <p>Learning is a loop with a few named parts. Knowing them makes the rest of the topics click:</p>
+    <ul>
+      <li><strong>Loss function</strong> — a score for how wrong the output was. Lower is better; the whole goal is to shrink it.</li>
+      <li><strong>Backpropagation</strong> — the method that works backward from the error and assigns each weight its share of the blame.</li>
+      <li><strong>Optimiser &amp; learning rate</strong> — the rule that nudges each weight in the right direction, and how big each nudge is.</li>
+    </ul>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Picture learning darts blindfolded. Someone tells you "30 cm too far left" (the <strong>loss</strong>), you reason which arm movements caused that miss (<strong>backpropagation</strong>), and you adjust your throw by a sensible amount — not a wild overcorrection (the <strong>learning rate</strong>). Throw, get feedback, adjust; that loop is training.
+    </div>
+
+    <h3>The two things that go wrong</h3>
+    <p>Almost every training problem is a version of one of these:</p>
+    <ul>
+      <li><strong>Overfitting</strong> — the network memorises the training data instead of learning the general pattern, so it aces practice and fails on anything new.</li>
+      <li><strong>Underfitting</strong> — the network is too simple or undertrained to capture the pattern at all, so it does poorly even on the training data.</li>
+    </ul>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      A student who memorises last year's exact exam answers (overfitting) is lost when the questions change; a student who barely studied (underfitting) struggles on every version. Good training, like good studying, lands between the two — understanding the material well enough to handle new questions.
+    </div>
+
+    <p class="rf-bridge">With the picture in place — neurons with <strong>weights</strong> and <strong>biases</strong>, stacked into <strong>layers</strong>, made <strong>deep</strong> to build features hierarchically — the natural starting point is the raw material itself: the weights and layers a network is made of, and the one rule that makes them work (start them off <em>different</em> from each other, or every neuron learns the same thing). Close this primer when you're ready, and head to Weights &amp; layers.</p>
+
+    <button class="refresh-close" onclick="toggleRefresh()">Close primer ▲</button>
+  </div>
+</div>
+
 <div class="section-pills-wrap">
   <div class="section-pills" id="sectionPills">
     <button class="section-pill active" data-sec="1" onclick="showSection(1)"><span class="pnum">1</span> Weights &amp; layers</button>
@@ -313,7 +405,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v3';
+const CACHE_VERSION = '2026-06-09-v4';
 const MODULE_ID    = 'dl_m3';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -637,6 +729,16 @@ function buildSections() {
 }
 
 // ── Navigation ───────────────────────────────────────────────────────────────
+function toggleRefresh() {
+  var t = document.getElementById('refreshToggle');
+  var p = document.getElementById('refreshPanel');
+  if (!t || !p) return;
+  var open = p.classList.toggle('open');
+  t.classList.toggle('open', open);
+  var chev = t.querySelector('.rt-chev');
+  if (chev) chev.textContent = open ? '▲ CLOSE' : '▼ OPEN';
+}
+
 function showSection(n) {
   document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.section-pill').forEach(b => b.classList.remove('active'));
