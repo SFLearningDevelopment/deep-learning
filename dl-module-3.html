@@ -313,7 +313,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v1';
+const CACHE_VERSION = '2026-06-09-v3';
 const MODULE_ID    = 'dl_m3';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -334,6 +334,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           In an image network, first-layer neurons might learn edge detectors. The next layer combines edges into corners and textures; a deeper layer combines those into object parts. None of this hierarchy emerges if every neuron in a layer starts with the same weight — they would all learn the same edge.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Picture a panel of judges scoring a dish. Each judge (a <strong>neuron</strong>) weighs the ingredients (inputs) differently — one cares most about spice, another about presentation; the <strong>weight</strong> is how much each judge trusts each ingredient, and the <strong>bias</strong> is the judge's baseline mood before tasting anything. Now the catch: if you clone one judge so every seat on the panel has identical opinions (identical starting weights), the "panel" is really just one judge repeated — you gain nothing from having many. Judges must start with <em>different</em> opinions to cover different aspects of the dish. That's why weights are initialised randomly. And <strong>depth</strong> is like having a second panel that judges the <em>first panel's</em> summaries rather than the raw dish — but only if something interpretive happens between them; bolt two identical scoring sheets together with no interpretation and you've just doubled paperwork, not insight (linear layers with no activation).
         </div>`
     },
     scenario: {
@@ -341,22 +345,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Ravi</strong>, an SF engineer new to deep learning, hand-builds his first network and, wanting reproducibility, initialises every weight to the same constant (0.1). Training runs without errors, but every neuron in a layer ends up identical and the network barely learns.</p>
         <p class="prose">He suspects a bug in the framework. In fact the problem is conceptual: symmetric initialisation. Whether Ravi recognises the symmetry-breaking principle determines if he fixes it in one line or spends days chasing a phantom framework bug.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the network trains without any error message — it just learns almost nothing, and the cause is an initialisation choice that looks perfectly reasonable.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the network trains without any error message — it just learns almost nothing, and the cause is an initialisation choice that looks perfectly reasonable. For instance: Ravi's loss drops a little then flatlines at, say, 60% accuracy and won't budge no matter how long he trains. Inspecting the layer, all 128 neurons hold identical weights and produce identical outputs — his "wide" layer is mathematically one neuron wearing 128 masks. Nothing crashes; the model is simply incapable of learning more than a single feature, and only someone who knows to check for symmetry would ever spot why.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Initialise weights randomly to break symmetry.</strong> Ravi uses a principled scheme (e.g. He or Xavier initialisation) so neurons start different and receive different gradients, letting them specialise.</p>
-        <p class="prose"><strong>2. Keep biases simple.</strong> He initialises biases to zero (or small constants), which is fine because the random weights already break symmetry.</p>
-        <p class="prose"><strong>3. Ensure non-linearities are present.</strong> He confirms activation functions sit between layers so that the network's depth actually buys representational power.</p>
+        <p class="prose"><strong>1. Initialise weights randomly to break symmetry.</strong> Ravi uses a principled scheme (e.g. He or Xavier initialisation) so neurons start different and receive different gradients, letting them specialise. <strong>Xavier</strong> and <strong>He</strong> initialisation don't just randomise — they scale the random values to the layer's size so signals neither shrink nor blow up as they pass through (He is tuned for ReLU, Xavier for sigmoid/tanh). The randomness breaks the symmetry; the scaling keeps the network trainable at depth.</p>
+        <p class="prose"><strong>2. Keep biases simple.</strong> He initialises biases to zero (or small constants), which is fine because the random weights already break symmetry. Unlike weights, identical biases cause no problem — since each neuron already has different weights, they receive different gradients and specialise regardless of starting from the same bias.</p>
+        <p class="prose"><strong>3. Ensure non-linearities are present.</strong> He confirms activation functions sit between layers so that the network's depth actually buys representational power. Concretely, he checks every hidden layer is followed by a ReLU (or similar); a quick tell that this is missing is that adding more layers changes nothing — the symptom of a stack that has silently collapsed to a single linear map.</p>
         <div class="callout callout-good"><strong>The result:</strong> neurons that diverge and specialise from the first step, and a deep network whose layers genuinely build hierarchical features.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Constant/symmetric weight initialisation.</strong> Setting all weights equal makes neurons receive identical gradients and stay identical, so a wide layer behaves like a single neuron. Always randomise.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Stacking linear layers without activations.</strong> A pile of linear layers with no non-linearity collapses to one linear layer — the depth is wasted.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Blaming the framework for a conceptual bug.</strong> Treating "trains but doesn't learn" as a tooling fault, instead of checking initialisation and architecture, wastes time on the wrong layer of the stack.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Constant/symmetric weight initialisation.</strong> Setting all weights equal makes neurons receive identical gradients and stay identical, so a wide layer behaves like a single neuron. Always randomise. <strong>How:</strong> backprop sends the same error signal to neurons that have the same weights and inputs, so they update by the same amount and stay identical forever — the cloned-judges panel that never diversifies.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Stacking linear layers without activations.</strong> A pile of linear layers with no non-linearity collapses to one linear layer — the depth is wasted. <strong>How:</strong> mathematically, a linear function of a linear function is still linear (multiplying matrices gives one matrix), so ten linear layers compute exactly what one could — the extra nine are dead weight.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Blaming the framework for a conceptual bug.</strong> Treating "trains but doesn't learn" as a tooling fault, instead of checking initialisation and architecture, wastes time on the wrong layer of the stack. <strong>How:</strong> the framework did exactly what it was told — randomise nothing, add no non-linearity — so the bug lives in the model definition, not the library; debugging the tool searches a place where nothing is wrong.</div>`
     }
   },
   {
@@ -369,6 +373,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           Picture gradients flowing back through 20 sigmoid layers. Each layer multiplies by a derivative ≤ 0.25. After 20 layers the signal is scaled by roughly 0.25²⁰ — astronomically small. The early layers barely update. Swap in ReLU and the positive-side gradient is 1, so the signal survives the journey.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of passing a whispered message back along a line of 20 people, where each person can only relay a <em>fraction</em> of the volume they heard. With <strong>sigmoid</strong>, everyone halves the volume — by the time the message reaches the front of the line (the early layers), it's inaudible, so those people never learn what to fix. That's <strong>vanishing gradients</strong>. With <strong>ReLU</strong>, anyone who heard a positive signal relays it at full volume, so the message survives the whole line. The flip side: a ReLU person who once heard silence (negative input) relays silence forever and stops participating — the <strong>dying ReLU</strong> problem, which Leaky ReLU fixes by letting even "silent" people pass a faint whisper.
         </div>`
     },
     scenario: {
@@ -376,22 +384,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Tara</strong> builds a 20-layer fully connected network using sigmoid activations throughout — the activation she learned first. The loss barely moves; diagnostics show the early-layer gradients are essentially zero while later layers update normally.</p>
         <p class="prose">She is tempted to add more layers or train longer. But the real issue is that her saturating activations are strangling the gradient before it reaches the early layers. Her choice of activation, not her patience, is the lever that matters.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the network isn't broken and isn't erroring — it's learning, just vanishingly slowly in its early layers, which is easy to misread as "needs more training."</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the network isn't broken and isn't erroring — it's learning, just vanishingly slowly in its early layers, which is easy to misread as "needs more training." For instance: Tara's loss inches from 2.30 to 2.28 over an hour and she assumes it just needs more epochs. But a gradient check would show her layer-1 gradients are around 10⁻⁹ while layer-20's are normal — the early layers are effectively frozen. No amount of extra time fixes that; the message never reaches the front of the line, so the foundation of the network never gets built.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Use non-saturating activations.</strong> Tara switches the hidden layers to ReLU (or a variant), so positive-side gradients stay healthy and flow back to the early layers.</p>
-        <p class="prose"><strong>2. Pair with good initialisation.</strong> She uses He initialisation, designed for ReLU, to keep activation scales stable across depth.</p>
-        <p class="prose"><strong>3. Add normalisation if needed.</strong> For very deep stacks she adds batch normalisation to further stabilise gradient flow, and reserves sigmoid/softmax for the output layer where it belongs.</p>
+        <p class="prose"><strong>1. Use non-saturating activations.</strong> Tara switches the hidden layers to ReLU (or a variant), so positive-side gradients stay healthy and flow back to the early layers. Because ReLU's slope is exactly 1 for positive inputs (not ≤0.25 like sigmoid), the gradient passes through undiminished instead of being repeatedly halved — the full-volume relay that reaches the front of the line.</p>
+        <p class="prose"><strong>2. Pair with good initialisation.</strong> She uses He initialisation, designed for ReLU, to keep activation scales stable across depth. <strong>He initialisation</strong> sizes the random starting weights to ReLU's behaviour so that signal strength stays roughly constant layer to layer — without it, even ReLU activations can drift toward zero or explode as depth grows.</p>
+        <p class="prose"><strong>3. Add normalisation if needed.</strong> For very deep stacks she adds batch normalisation to further stabilise gradient flow, and reserves sigmoid/softmax for the output layer where it belongs. <strong>Batch normalisation</strong> re-centres each layer's outputs to a steady scale every step, which keeps gradients in a healthy range; and sigmoid/softmax still earn a place at the <em>output</em> (to produce probabilities), just not in the hidden layers where they'd choke the gradient.</p>
         <div class="callout callout-good"><strong>The result:</strong> gradients that reach every layer, early layers that actually learn, and training that converges in a reasonable time.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Saturating activations throughout a deep net.</strong> Sigmoid/tanh in every hidden layer of a deep network causes vanishing gradients; early layers stop learning.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Treating slow learning as "needs more epochs."</strong> Training longer doesn't fix a near-zero gradient; it just wastes compute while early layers stay frozen.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring dying ReLU.</strong> Swapping to ReLU but using a too-high learning rate can push many neurons permanently negative (dead). Watch for large fractions of zero activations and consider Leaky ReLU.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Saturating activations throughout a deep net.</strong> Sigmoid/tanh in every hidden layer of a deep network causes vanishing gradients; early layers stop learning. <strong>How:</strong> each sigmoid layer multiplies the backward signal by a derivative of at most 0.25; chain 20 of them and the signal is scaled by ~0.25²⁰ ≈ 10⁻¹², so the earliest layers receive essentially no gradient.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Treating slow learning as "needs more epochs."</strong> Training longer doesn't fix a near-zero gradient; it just wastes compute while early layers stay frozen. <strong>How:</strong> weight change per step = gradient × learning rate; if the gradient is ~10⁻⁹, the update is negligible no matter how many steps you take — time can't multiply a near-zero signal into a useful one.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring dying ReLU.</strong> Swapping to ReLU but using a too-high learning rate can push many neurons permanently negative (dead). Watch for large fractions of zero activations and consider Leaky ReLU. <strong>How:</strong> a large update can shove a neuron's weights so far that its input is always negative; ReLU then outputs 0, its gradient is also 0, so it never updates again — permanently stuck. Leaky ReLU gives a small negative-side slope so a "dead" neuron can still receive a faint gradient and recover.</div>`
     }
   },
   {
@@ -404,6 +412,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A model hits 99% training accuracy but 72% validation — classic overfitting. Adding dropout and a little L2 narrows the gap to 88%/85%: training accuracy drops, but the model now generalises. The goal was never maximal training accuracy; it was the validation number.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of a student preparing for an exam. <strong>Overfitting</strong> is memorising last year's exact answer key — flawless on the practice paper, lost on the real exam. <strong>Dropout</strong> is like randomly covering some of your notes each study session, forcing you to understand the material rather than lean on one cheat-sheet line; you end up with robust, redundant knowledge. <strong>L2</strong> is a rule that no single fact may dominate your reasoning, keeping your understanding balanced. But here's the trap that catches Imran's situation: if a student already <em>under</em>-studied (<strong>underfitting</strong>), hiding even more of their notes makes them worse — regularisation only helps the student who is over-memorising, never the one who hasn't learned enough yet.
         </div>`
     },
     scenario: {
@@ -411,22 +423,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Imran</strong> has a model that underfits — both training and validation accuracy are mediocre and close together. Having read that regularisation "improves models," he adds aggressive dropout and strong L2, expecting a boost.</p>
         <p class="prose">Performance gets <em>worse</em> on both sets. Imran has misdiagnosed the problem: regularisation reduces variance (overfitting), but his model suffers from high bias (underfitting). Reading the bias–variance signs correctly is what separates a fix from a regression.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> regularisation is almost always described as beneficial, so reaching for it feels safe — but on an underfitting model it pushes in exactly the wrong direction.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> regularisation is almost always described as beneficial, so reaching for it feels safe — but on an underfitting model it pushes in exactly the wrong direction. For instance: Imran's model sits at 64% train / 62% validation — the small gap screams "not learning enough," not "memorising." He adds 50% dropout and heavy L2 anyway, and both scores fall to the mid-50s. He just hid notes from a student who hadn't studied enough — making a high-bias model even simpler when it needed to become <em>more</em> capable, not less.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Diagnose bias vs variance first.</strong> Imran compares training and validation curves: a small gap with low scores means underfitting (high bias), not overfitting — so regularisation is the wrong tool.</p>
-        <p class="prose"><strong>2. Match the remedy to the diagnosis.</strong> For underfitting he increases capacity (more layers/units), trains longer, or improves features — and <em>reduces</em> regularisation.</p>
-        <p class="prose"><strong>3. Apply normalisation for stability, dropout only where overfitting appears.</strong> He adds batch norm to stabilise training, and reserves dropout/L2 for when a train–val gap actually opens up, disabling dropout at inference.</p>
+        <p class="prose"><strong>1. Diagnose bias vs variance first.</strong> Imran compares training and validation curves: a small gap with low scores means underfitting (high bias), not overfitting — so regularisation is the wrong tool. The read is mechanical: <em>low train + low validation, small gap</em> = underfitting (the model can't even fit what it's seen); <em>high train + much lower validation, big gap</em> = overfitting (it memorised). The shape of that gap tells you which medicine to reach for.</p>
+        <p class="prose"><strong>2. Match the remedy to the diagnosis.</strong> For underfitting he increases capacity (more layers/units), trains longer, or improves features — and <em>reduces</em> regularisation. The logic: a high-bias model is too simple to capture the pattern, so the fix is to give it more expressive power or better inputs, the opposite of constraining it.</p>
+        <p class="prose"><strong>3. Apply normalisation for stability, dropout only where overfitting appears.</strong> He adds batch norm to stabilise training, and reserves dropout/L2 for when a train–val gap actually opens up, disabling dropout at inference. Concretely, he keeps batch norm on throughout (it aids stability regardless), but only introduces dropout once training accuracy pulls clearly ahead of validation — and turns dropout off at prediction time so outputs are stable and repeatable.</p>
         <div class="callout callout-good"><strong>The result:</strong> the right intervention for the actual failure mode, rather than a reflexive dose of regularisation that deepens the problem.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Regularising an underfitting model.</strong> Dropout and L2 increase bias; piling them on a high-bias model hurts both training and validation performance.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Leaving dropout on at inference.</strong> Dropout is a training-time technique; forgetting to disable it makes predictions noisy and non-deterministic.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Skipping the bias–variance diagnosis.</strong> Reaching for a fix before reading the train/validation curves means treating the wrong disease.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Regularising an underfitting model.</strong> Dropout and L2 increase bias; piling them on a high-bias model hurts both training and validation performance. <strong>How:</strong> both techniques deliberately restrict the model — dropout removes neurons, L2 shrinks weights — which lowers capacity. A model that's already too weak to fit the data needs <em>more</em> capacity, so restricting it further drives both scores down.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Leaving dropout on at inference.</strong> Dropout is a training-time technique; forgetting to disable it makes predictions noisy and non-deterministic. <strong>How:</strong> dropout randomly zeroes neurons each pass; if left on at prediction time, the same input run twice gives different answers because a different random subset fires each time — fine for training regularisation, unacceptable for serving.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Skipping the bias–variance diagnosis.</strong> Reaching for a fix before reading the train/validation curves means treating the wrong disease. <strong>How:</strong> underfitting and overfitting need opposite remedies (add capacity vs constrain it); without first reading the gap between train and validation scores you have a 50/50 chance of applying the cure that makes things worse.</div>`
     }
   },
   {
@@ -439,6 +451,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           In medical screening, a missed disease (false negative) is far costlier than a false alarm. A plain loss treats both errors equally. Weighting the loss to penalise false negatives more steers the model toward the trade-off the real world actually wants.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of the <strong>loss function</strong> as the scoring rule in a game — whatever it rewards is what players chase. If a quiz only scores total questions answered, students will answer fast and carelessly; if it scores accuracy, they'll slow down and check. The rule shapes the behaviour. <strong>Cross-entropy</strong> is a strict scorer that punishes confident wrong answers hardest (saying "100% sure" and being wrong costs a lot), which is exactly what you want for classification. And on a lopsided game — 99 easy questions, 1 hard one that actually matters — a naive "total correct" score lets a player ignore the one hard question and still look brilliant. That's why the scoring rule must <em>weight</em> the rare, important case.
         </div>`
     },
     scenario: {
@@ -446,22 +462,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Lakshmi</strong> trains a fraud detector on transactions where only 1% are fraudulent. She optimises a standard accuracy-aligned loss and is delighted to see 99% accuracy — until she realises the model predicts "not fraud" for <em>everything</em> and catches zero fraud.</p>
         <p class="prose">The 99% is an artefact of imbalance. Whether Lakshmi reframes both her loss and her evaluation metric determines if she ships a useless model or a working one.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the headline metric looks excellent. The failure is invisible unless you look past accuracy to what the model actually detects.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the headline metric looks excellent. The failure is invisible unless you look past accuracy to what the model actually detects. For instance: Lakshmi's dashboard proudly shows 99% accuracy and everyone celebrates — but the confusion matrix would reveal it caught 0 of the 1,000 actual fraud cases. By always guessing "not fraud" it scores 99% (since 99% really aren't fraud) while delivering exactly zero of the value the system was built for. The number that looks like success is measuring the wrong thing entirely.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Make the loss reflect error costs.</strong> Lakshmi uses class-weighted (or focal) loss so misclassifying the rare fraud class carries real penalty, rather than being drowned out by the majority.</p>
-        <p class="prose"><strong>2. Evaluate with the right metrics.</strong> She replaces raw accuracy with precision, recall, and the precision–recall curve, which expose how well the minority class is actually caught.</p>
-        <p class="prose"><strong>3. Consider data-level remedies too.</strong> She complements the weighted loss with resampling where appropriate, and chooses a decision threshold based on the business cost of false negatives vs false positives.</p>
+        <p class="prose"><strong>1. Make the loss reflect error costs.</strong> Lakshmi uses class-weighted (or focal) loss so misclassifying the rare fraud class carries real penalty, rather than being drowned out by the majority. <strong>Class weighting</strong> multiplies the penalty for fraud errors by, say, 100× so one missed fraud hurts as much as 100 missed non-frauds; <strong>focal loss</strong> goes further, automatically down-weighting the easy majority cases so training focuses on the hard, rare ones.</p>
+        <p class="prose"><strong>2. Evaluate with the right metrics.</strong> She replaces raw accuracy with precision, recall, and the precision–recall curve, which expose how well the minority class is actually caught. <strong>Recall</strong> asks "of all real frauds, what fraction did we catch?" (the all-"not fraud" model scores 0% here, instantly exposing it); <strong>precision</strong> asks "of everything we flagged, what fraction was truly fraud?" Together they reveal what 99% accuracy hid.</p>
+        <p class="prose"><strong>3. Consider data-level remedies too.</strong> She complements the weighted loss with resampling where appropriate, and chooses a decision threshold based on the business cost of false negatives vs false positives. <strong>Resampling</strong> rebalances the training data (oversample fraud or undersample non-fraud) so the model sees the rare class often enough to learn it; and rather than defaulting the decision threshold to 0.5, she sets it where the cost of a missed fraud and a false alarm balance for the business.</p>
         <div class="callout callout-good"><strong>The result:</strong> a detector judged by whether it catches fraud, trained with a loss that actually cares about the rare class.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Unweighted loss on imbalanced data.</strong> The majority class dominates, and the model minimises loss by ignoring the minority class — exactly the class you care about.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Judging by accuracy alone.</strong> On 99%/1% data, 99% accuracy means nothing; precision/recall reveal the truth.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — MSE for classification.</strong> Using squared error with sigmoid/softmax gives weak gradients on confident errors and slows learning versus cross-entropy.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Unweighted loss on imbalanced data.</strong> The majority class dominates, and the model minimises loss by ignoring the minority class — exactly the class you care about. <strong>How:</strong> with 99% non-fraud, the model can drive total loss almost to zero just by always predicting "not fraud"; the 1% fraud errors barely register in the sum, so the optimiser has no incentive to learn them.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Judging by accuracy alone.</strong> On 99%/1% data, 99% accuracy means nothing; precision/recall reveal the truth. <strong>How:</strong> accuracy counts all correct predictions equally, so a model that's right on the trivial 99% looks excellent while scoring 0% recall on the cases that matter — the metric averages the important failure into invisibility.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — MSE for classification.</strong> Using squared error with sigmoid/softmax gives weak gradients on confident errors and slows learning versus cross-entropy. <strong>How:</strong> when a sigmoid output is confidently wrong (near 0 or 1), the squared-error gradient is nearly flat there, so the model barely corrects its worst mistakes; cross-entropy instead produces a large gradient for confident errors, fixing them fast.</div>`
     }
   },
   {
@@ -474,6 +490,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A recurrent network unrolled over 100 time steps multiplies gradients across all of them. If the per-step factor is slightly above 1, the gradient explodes; slightly below, it vanishes. This is why long-sequence RNNs were hard to train before gating (LSTM/GRU) and clipping became standard.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Imagine a company where a customer complaint must be traced back through the chain of decisions that caused it, so each department can adjust. <strong>Backpropagation</strong> is that blame-tracing: starting from the final error (the <strong>loss</strong>), it works backward through every layer assigning each its share of responsibility (the <strong>chain rule</strong>). Two failure modes: if every department only passes back a fraction of the blame, by the time it reaches the first department the signal is nil and they never change (<strong>vanishing gradients</strong>); if each department <em>amplifies</em> the blame, it snowballs into an absurd over-correction that breaks everything (<strong>exploding gradients</strong>, often showing up as a NaN loss). <strong>Gradient clipping</strong> is a cap on how much blame any step can pass back, preventing the snowball.
         </div>`
     },
     scenario: {
@@ -481,22 +501,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Dev</strong> trains a deep recurrent model and within a few steps the loss prints as <code>NaN</code>. He concludes the deep-learning framework has a bug and starts drafting a support ticket.</p>
         <p class="prose">But NaN losses early in training are a textbook symptom of <em>exploding gradients</em>, not a broken library. Whether Dev recognises the pattern decides if he resolves it in minutes with standard techniques or burns a day blaming the tools.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the failure is dramatic and sudden, which makes "the tool is broken" feel plausible — when the real cause is the math of multiplying gradients through many layers.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the failure is dramatic and sudden, which makes "the tool is broken" feel plausible — when the real cause is the math of multiplying gradients through many layers. For instance: Dev's loss reads 2.1, 1.8, then <code>NaN</code> by step 4. A crash that fast and total looks like a library defect. But it's the blame-tracing snowball: a too-large gradient got amplified step over step until it overflowed to infinity, and infinity in the weights makes every subsequent number NaN. The framework computed exactly what the math dictated — the instability is in the model and its learning rate, not the code.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Recognise NaN as an exploding-gradient signal.</strong> Dev treats the NaN loss as a gradient-stability problem rather than a framework fault.</p>
-        <p class="prose"><strong>2. Apply gradient clipping and lower the learning rate.</strong> He clips gradient norms to a ceiling and reduces the step size, which usually stops the blow-up immediately.</p>
-        <p class="prose"><strong>3. Improve initialisation and architecture.</strong> He checks initialisation, adds normalisation, and for recurrent models uses gated units (LSTM/GRU) designed to keep gradients stable over long sequences.</p>
+        <p class="prose"><strong>1. Recognise NaN as an exploding-gradient signal.</strong> Dev treats the NaN loss as a gradient-stability problem rather than a framework fault. The tell is the pattern: a loss that decreases briefly then jumps to NaN/infinity (rather than erroring at line one) is the signature of values snowballing out of range — a diagnosis, not a guess.</p>
+        <p class="prose"><strong>2. Apply gradient clipping and lower the learning rate.</strong> He clips gradient norms to a ceiling and reduces the step size, which usually stops the blow-up immediately. <strong>Gradient clipping</strong> caps the size of each update so no single step can snowball (the blame-cap from the analogy); halving the learning rate shrinks every step further, and together they almost always tame the explosion on the next run.</p>
+        <p class="prose"><strong>3. Improve initialisation and architecture.</strong> He checks initialisation, adds normalisation, and for recurrent models uses gated units (LSTM/GRU) designed to keep gradients stable over long sequences. <strong>LSTM/GRU</strong> cells have built-in gates that control how much signal carries across each step, so the gradient neither vanishes nor explodes over long sequences — solving at the architecture level what clipping patches at the optimiser level.</p>
         <div class="callout callout-good"><strong>The result:</strong> stable training with a finite, decreasing loss — fixed by understanding backprop's dynamics, not by switching frameworks.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Blaming the framework for NaN losses.</strong> NaN early in training almost always means exploding gradients, a math/architecture issue you control — not a library bug.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — "Just train longer" through instability.</strong> A diverging loss won't recover with more steps; it needs clipping, a smaller learning rate, or better init.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring vanishing gradients in deep stacks.</strong> Assuming gradients always reach the early layers leads to silently undertrained early layers; normalisation and residual connections matter.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Blaming the framework for NaN losses.</strong> NaN early in training almost always means exploding gradients, a math/architecture issue you control — not a library bug. <strong>How:</strong> the framework faithfully multiplies the gradients you set up; if those products overflow to infinity, the resulting NaN is the math doing what your init/learning-rate told it to — the fix is yours, not the library's.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — "Just train longer" through instability.</strong> A diverging loss won't recover with more steps; it needs clipping, a smaller learning rate, or better init. <strong>How:</strong> once weights hit NaN/infinity, every further step computes with corrupted numbers, so additional training only propagates the corruption — there's nothing finite left to descend from.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring vanishing gradients in deep stacks.</strong> Assuming gradients always reach the early layers leads to silently undertrained early layers; normalisation and residual connections matter. <strong>How:</strong> the same multiplication that can explode can also shrink — many factors below 1 multiply toward zero, so without normalisation or residual "shortcut" paths, the earliest layers receive almost no gradient and never learn, with no error to flag it.</div>`
     }
   },
   {
@@ -509,6 +529,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           Validation loss falls until epoch 80, then climbs for the next 420 epochs while training loss keeps dropping. The epoch-80 checkpoint is the best model; the epoch-500 model is worse despite "more training." Early stopping would have saved both the compute and the better model.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of descending a foggy hill to reach the valley (lowest <strong>loss</strong>). The <strong>learning rate</strong> is your step size: tiny steps and you'll be there till nightfall; giant leaps and you bound right over the valley and up the far slope, never settling — that's why too-high a rate makes the loss bounce or diverge. <strong>Adam</strong> is like having smart shoes that automatically shorten your stride on steep, tricky ground and lengthen it on gentle slopes. And <strong>early stopping</strong> is knowing when to halt: you're really descending a <em>practice</em> hill (training data), and what matters is the <em>real</em> hill (validation). The moment your altitude on the real hill stops dropping and starts rising, keep going on the practice hill and you're just memorising its bumps — so you stop and keep the best real-hill position you reached.
         </div>`
     },
     scenario: {
@@ -516,22 +540,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Pooja</strong> sets her training to a fixed 500 epochs on the principle that "more training is better," and only monitors training loss, which keeps decreasing the whole way. She ships the final-epoch model.</p>
         <p class="prose">In production it underperforms a model a colleague trained for far fewer epochs. Validation loss had actually bottomed at epoch 80 and risen afterward — Pooja's final model is overfit. Her monitoring discipline, not her epoch count, is the real determinant of quality.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the training-loss curve looks like steady success the entire time, masking that the model passed its generalisation peak hundreds of epochs earlier.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the training-loss curve looks like steady success the entire time, masking that the model passed its generalisation peak hundreds of epochs earlier. For instance: Pooja watches training loss glide from 0.9 down to 0.05 across 500 epochs — a textbook-looking success curve she screenshots for the report. Invisible to her, validation loss bottomed at epoch 80 and climbed steadily after. She shipped the epoch-500 model, which has memorised the practice hill's every bump and performs worse on real data than the epoch-80 version she walked right past.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Monitor validation, not just training loss.</strong> Pooja tracks validation loss every epoch and treats its minimum, not the final epoch, as the target.</p>
-        <p class="prose"><strong>2. Use early stopping and checkpointing.</strong> She stops when validation loss stops improving for a patience window, and keeps the checkpoint with the best validation score.</p>
-        <p class="prose"><strong>3. Tune the learning rate deliberately.</strong> She finds a learning rate that decreases the loss steadily (using schedules or an adaptive optimiser like Adam) rather than one that oscillates or stalls.</p>
+        <p class="prose"><strong>1. Monitor validation, not just training loss.</strong> Pooja tracks validation loss every epoch and treats its minimum, not the final epoch, as the target. The reason: training loss measures memorisation of data the model has seen, while validation loss measures generalisation to data it hasn't — and only the latter predicts production behaviour, so it's the curve that actually matters.</p>
+        <p class="prose"><strong>2. Use early stopping and checkpointing.</strong> She stops when validation loss stops improving for a patience window, and keeps the checkpoint with the best validation score. <strong>Patience</strong> means she waits, say, 10 epochs after the last improvement before stopping (so a brief plateau doesn't fool her), and <strong>checkpointing</strong> saves the model each time validation hits a new best — so even if she trains too long, she still has the epoch-80 version to ship.</p>
+        <p class="prose"><strong>3. Tune the learning rate deliberately.</strong> She finds a learning rate that decreases the loss steadily (using schedules or an adaptive optimiser like Adam) rather than one that oscillates or stalls. A <strong>schedule</strong> lowers the rate over time (big confident steps early, fine steps near the valley floor), and Adam adapts the step size per weight automatically — both aimed at the steady descent that a single fixed, mis-set rate rarely achieves.</p>
         <div class="callout callout-good"><strong>The result:</strong> the model captured at its generalisation peak, with less wasted compute and better production performance.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Fixed long training with no validation monitoring.</strong> Training blindly for a large epoch count overfits past the validation minimum and ships a worse model.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Equating "more epochs" with "better."</strong> Beyond the validation minimum, extra epochs degrade generalisation while burning compute.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring the learning rate.</strong> Leaving it too high causes oscillation/divergence; too low wastes time. It deserves explicit tuning, not a default left untouched.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Fixed long training with no validation monitoring.</strong> Training blindly for a large epoch count overfits past the validation minimum and ships a worse model. <strong>How:</strong> after the validation low point, the model keeps reducing training loss only by memorising training-specific noise, so generalisation degrades every further epoch — and without watching validation you can't see it happening.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Equating "more epochs" with "better."</strong> Beyond the validation minimum, extra epochs degrade generalisation while burning compute. <strong>How:</strong> "more training" only helps until the model has learned the real pattern; past that, each epoch fits more noise, so you pay compute to make the model actively worse on unseen data.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring the learning rate.</strong> Leaving it too high causes oscillation/divergence; too low wastes time. It deserves explicit tuning, not a default left untouched. <strong>How:</strong> too-large steps overshoot the loss valley and bounce up the opposite side (loss oscillates or diverges); too-small steps inch along and may stall in a shallow dip — the single setting most likely to make or break convergence.</div>`
     }
   }
 ];
