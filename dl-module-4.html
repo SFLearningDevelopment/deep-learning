@@ -34,6 +34,38 @@
   .module-title { font-size:26px; font-weight:700; color:var(--text); }
   .module-progress { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:10px; }
 
+  /* Refresher primer */
+  .refresh-wrap { max-width:1100px; margin:18px auto 0; padding:0 32px; }
+  .refresh-toggle { width:100%; display:flex; align-items:center; gap:12px; padding:16px 20px; background:var(--blue-light); border:1.5px solid var(--blue-mid); border-left:3px solid var(--blue); border-radius:var(--radius); cursor:pointer; font-family:'Merriweather Sans',sans-serif; font-size:15.5px; font-weight:700; color:var(--blue-dark); text-align:left; transition:background .15s; }
+  .refresh-toggle:hover { background:var(--blue-light); border-color:var(--blue); }
+  .refresh-toggle .rt-icon { font-size:20px; flex-shrink:0; }
+  .refresh-toggle .rt-text { flex:1; }
+  .refresh-toggle .rt-sub { display:block; font-weight:400; font-size:13px; color:var(--text-dim); margin-top:3px; }
+  .refresh-toggle .rt-chev { font-size:13px; font-family:'Source Code Pro',monospace; transition:transform .2s; flex-shrink:0; }
+  .refresh-toggle.open .rt-chev { transform:rotate(180deg); }
+  .refresh-panel { display:none; margin-top:14px; background:var(--bg2); border:1.5px solid var(--border); border-radius:var(--radius); padding:30px 34px; animation:fadeIn .25s ease; }
+  .refresh-panel.open { display:block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+  .refresh-panel h3 { font-size:20px; font-weight:700; color:var(--text); margin:26px 0 10px; }
+  .refresh-panel h3:first-child { margin-top:0; }
+  .refresh-panel h4 { font-size:16px; font-weight:700; color:var(--blue-dark); margin:18px 0 6px; }
+  .refresh-panel p { font-size:16px; color:var(--text-dim); line-height:1.8; margin-bottom:12px; }
+  .refresh-panel p strong { color:var(--text); font-weight:600; }
+  .refresh-panel ul { margin:0 0 14px; padding-left:22px; }
+  .refresh-panel li { font-size:15.5px; color:var(--text-dim); line-height:1.75; margin-bottom:8px; }
+  .refresh-panel li strong { color:var(--text); font-weight:600; }
+  .rf-eg { border-left:3px solid var(--green); background:var(--green-light); padding:12px 16px; border-radius:0 8px 8px 0; margin:8px 0 16px; font-size:14.5px; line-height:1.7; color:var(--text-dim); }
+  .rf-eg .eg-label { font-size:11px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:5px; }
+  .rf-eg strong { color:var(--text); }
+  .rf-table { width:100%; border-collapse:collapse; margin:8px 0 4px; }
+  .rf-table th, .rf-table td { text-align:left; padding:10px 14px; border:1px solid var(--border); font-size:14.5px; vertical-align:top; }
+  .rf-table th { background:var(--bg3); font-weight:700; color:var(--text); }
+  .rf-table td { color:var(--text-dim); line-height:1.65; }
+  .rf-bridge { font-size:16px; color:var(--text-dim); line-height:1.8; margin:6px 0 18px; padding:14px 18px; background:var(--bg3); border-radius:8px; }
+  .rf-bridge strong { color:var(--text); font-weight:600; }
+  .refresh-close { margin-top:20px; padding:10px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .refresh-close:hover { background:var(--bg3); }
+
   /* Section pills */
   .section-pills-wrap { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 40px; overflow-x:auto; }
   .section-pills { display:flex; gap:0; }
@@ -200,6 +232,65 @@
   <div class="module-progress" id="moduleProgress">0 of 5 sections complete</div>
 </div>
 
+<div class="refresh-wrap">
+  <button class="refresh-toggle" id="refreshToggle" onclick="toggleRefresh()">
+    <span class="rt-icon">💡</span>
+    <span class="rt-text">Do you want to refresh your knowledge of Convolutional Neural Networks?
+      <span class="rt-sub">A quick primer on the fundamentals before you dive into the methods — open it if the sections feel fast-paced.</span>
+    </span>
+    <span class="rt-chev">▼ OPEN</span>
+  </button>
+
+  <div class="refresh-panel" id="refreshPanel">
+    <h3>Convolutional Neural Networks — the fundamentals</h3>
+    <p>A <strong>convolutional neural network (CNN)</strong> is a neural network built specifically for data with spatial structure — above all, images. It keeps the core idea of learning from examples, but adds machinery that understands a picture is a 2-D grid of pixels where <em>position and neighbourhood matter</em>, not just a flat list of numbers.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      A 200×200 colour photo is 120,000 numbers. A plain network would treat them as an unordered list, blind to the fact that two pixels side by side are related while two at opposite corners usually aren't. A CNN is built to respect that the pixels form a picture.
+    </div>
+
+    <h3>Why not just use a normal network?</h3>
+    <p>Feeding raw images into a fully connected network has two crippling problems, and CNNs exist to solve both:</p>
+    <ul>
+      <li><strong>Too many connections.</strong> Connecting every pixel to every neuron explodes the number of weights into the millions, making the network slow and prone to memorising.</li>
+      <li><strong>No sense of place.</strong> A plain network that learns to spot a cat in the top-left has no idea how to spot the same cat in the bottom-right — it would have to relearn it everywhere.</li>
+    </ul>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Imagine being told to find Waldo, but you can only recognise him if he's in the exact spot you first memorised. Move him an inch and you're lost. That's a plain network on images — and exactly the weakness convolution fixes.
+    </div>
+
+    <h3>The key idea: convolution</h3>
+    <p>A <strong>convolution</strong> uses a small <strong>filter</strong> (a little pattern-detector) that slides across the entire image, checking for its pattern at every position. The same filter is reused everywhere, so a feature learned in one spot is detected anywhere — and far fewer weights are needed.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Think of a small stencil shaped like an edge, slid across the whole page. Wherever the image matches the stencil, it lights up. One stencil finds that edge top-left, centre, or bottom-right — that reuse (the same filter everywhere) is what gives CNNs both efficiency and position-tolerance.
+    </div>
+
+    <h3>Building features in layers</h3>
+    <p>CNNs stack convolutions so features grow in complexity, and between them use <strong>pooling</strong> to shrink the image down — keeping the gist while cutting size, which speeds things up and adds tolerance to small shifts.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Early filters detect edges; the next layer combines edges into textures and corners; deeper layers assemble those into objects like "wheel" or "eye." Pooling along the way is like repeatedly shrinking the image to a thumbnail — you keep what something <em>is</em> while letting go of exactly where each pixel sat.
+    </div>
+
+    <h3>The recurring trade-off</h3>
+    <p>Almost every CNN decision is a balance between <strong>keeping detail</strong> and <strong>keeping things efficient</strong>:</p>
+    <ul>
+      <li>Pool and downsample aggressively → faster and smaller, but you lose fine spatial detail.</li>
+      <li>Keep high resolution → sharper detail, but heavier compute and memory.</li>
+    </ul>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Deciding <em>what</em> is in a photo (a cat) tolerates heavy shrinking. Deciding the <em>exact outline</em> of the cat for a cut-out does not — shrink too far and the edges blur. The right amount of pooling depends on how much spatial precision the task actually needs.
+    </div>
+
+    <p class="rf-bridge">With the essentials in hand — convolutions with sliding <strong>filters</strong>, stacked into layers that build features from edges to objects — the first practical lever to understand is the one that controls that detail-versus-efficiency trade-off directly: <strong>pooling</strong>, the step that shrinks an image down to keep the gist cheaply, and its reverse, restoring resolution when you need fine detail back. Close this primer when you're ready, and head to Pooling &amp; unpooling.</p>
+
+    <button class="refresh-close" onclick="toggleRefresh()">Close primer ▲</button>
+  </div>
+</div>
+
 <div class="section-pills-wrap">
   <div class="section-pills" id="sectionPills">
     <button class="section-pill active" data-sec="1" onclick="showSection(1)"><span class="pnum">1</span> Pooling &amp; unpooling</button>
@@ -314,7 +405,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v3';
+const CACHE_VERSION = '2026-06-09-v4';
 const MODULE_ID    = 'dl_m4';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -677,6 +768,16 @@ function buildSections() {
 }
 
 // ── Navigation ───────────────────────────────────────────────────────────────
+function toggleRefresh() {
+  var t = document.getElementById('refreshToggle');
+  var p = document.getElementById('refreshPanel');
+  if (!t || !p) return;
+  var open = p.classList.toggle('open');
+  t.classList.toggle('open', open);
+  var chev = t.querySelector('.rt-chev');
+  if (chev) chev.textContent = open ? '▲ CLOSE' : '▼ OPEN';
+}
+
 function showSection(n) {
   document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.section-pill').forEach(b => b.classList.remove('active'));
