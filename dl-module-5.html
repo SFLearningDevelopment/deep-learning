@@ -311,7 +311,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v1';
+const CACHE_VERSION = '2026-06-09-v3';
 const MODULE_ID    = 'dl_m5';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -332,6 +332,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           Recognising the action "waving" requires seeing motion <em>across</em> frames — a single frame of a raised hand is ambiguous. A 3D CNN convolves over the time axis and captures the movement. For classifying a still photograph, that third dimension would add cost and nothing else.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of a flip-book. A <strong>2D CNN</strong> looks at one page — it can tell there's a stick figure, but not whether it's jumping or falling. A <strong>3D CNN</strong> flips through a stack of pages at once, seeing how the figure <em>moves</em> across them (the extra <strong>time</strong> dimension) — now "jumping" is obvious. The catch is cost: flipping through stacks is far more work than glancing at one page, so a 3D CNN uses much more memory and compute. If every page is identical (a static scene), all that flipping tells you nothing a single page didn't — which is exactly why 3D is worth it only when the pages genuinely change.
         </div>`
     },
     scenario: {
@@ -339,22 +343,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Rohit</strong>, an SF engineer, is asked to classify short clips from a quality-inspection camera. Excited to use 3D CNNs, he applies a heavy 3D architecture — but the relevant signal in each clip is essentially static (a defect visible in any single frame). Training exhausts GPU memory, runs slowly, and shows no accuracy gain over a simple 2D model.</p>
         <p class="prose">Rohit reached for the most powerful tool rather than the one matched to where the information lives. Whether he diagnoses that the third dimension carries little signal here determines if he keeps burning compute or switches to an efficient 2D approach.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> 3D CNNs are genuinely the right answer for video <em>with motion</em> — so the instinct isn't wrong in general, only mismatched to this particular data.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> 3D CNNs are genuinely the right answer for video <em>with motion</em> — so the instinct isn't wrong in general, only mismatched to this particular data. For instance: Rohit's defect — a crack on a part — is fully visible in any single frame; the clip's other frames are near-duplicates. His 3D model dutifully processes the time dimension, tripling memory use and training time, yet scores the same as a plain 2D CNN that looks at one frame. The tool is excellent for, say, recognising a worker's gesture, but here it pays a steep cost to analyse a dimension that carries no signal.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Locate where the signal lives.</strong> Rohit checks whether the task depends on temporal dynamics or is decidable per frame, before choosing dimensionality.</p>
-        <p class="prose"><strong>2. Match the model to the data.</strong> Since the defect is visible in any single frame, he uses an efficient 2D CNN (optionally aggregating frame predictions) rather than a costly 3D model.</p>
-        <p class="prose"><strong>3. Reserve 3D for genuine temporal tasks.</strong> He keeps 3D CNNs for clips where motion across frames is the signal, where their extra cost buys real accuracy.</p>
+        <p class="prose"><strong>1. Locate where the signal lives.</strong> Rohit checks whether the task depends on temporal dynamics or is decidable per frame, before choosing dimensionality. The test is simple: could a human label a single frame correctly? If yes (the crack is visible in one image), the signal is spatial and a 2D model suffices; if you need to <em>watch</em> the clip to decide (a gesture, a fall), the signal is temporal and earns a 3D model.</p>
+        <p class="prose"><strong>2. Match the model to the data.</strong> Since the defect is visible in any single frame, he uses an efficient 2D CNN (optionally aggregating frame predictions) rather than a costly 3D model. Concretely he runs a cheap 2D CNN on each frame and combines the per-frame verdicts (e.g. majority vote or averaging) — getting the robustness of multiple looks without the cost of convolving across time.</p>
+        <p class="prose"><strong>3. Reserve 3D for genuine temporal tasks.</strong> He keeps 3D CNNs for clips where motion across frames is the signal, where their extra cost buys real accuracy. For tasks like action recognition, where the answer literally depends on how things move between frames, the 3D model's higher compute is justified because it captures information no single frame contains.</p>
         <div class="callout callout-good"><strong>The result:</strong> a model sized to the task — fast and memory-friendly where the third dimension adds nothing, powerful where it matters.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — 3D CNNs for effectively static data.</strong> Applying an expensive 3D model where the third dimension carries little signal wastes compute and memory for no accuracy gain.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Ignoring temporal info when it matters.</strong> The opposite error: treating motion-dependent video as independent 2D frames throws away the dynamics the task needs.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Reaching for the most powerful tool by default.</strong> Bigger and more general is not better when the data's structure doesn't call for it; match architecture to where information lives.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — 3D CNNs for effectively static data.</strong> Applying an expensive 3D model where the third dimension carries little signal wastes compute and memory for no accuracy gain. <strong>How:</strong> a 3D kernel has an extra dimension of weights and produces volume-shaped feature maps, multiplying parameters and memory several-fold; if the frames are near-identical, all that extra capacity processes redundant data and learns nothing a 2D model couldn't.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Ignoring temporal info when it matters.</strong> The opposite error: treating motion-dependent video as independent 2D frames throws away the dynamics the task needs. <strong>How:</strong> processing each frame in isolation discards the ordering and change between frames, so a "jump" and a "fall" — distinguishable only by direction of motion — become indistinguishable to the model.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Reaching for the most powerful tool by default.</strong> Bigger and more general is not better when the data's structure doesn't call for it; match architecture to where information lives. <strong>How:</strong> a more general model has more parameters to fit and more ways to overfit or waste compute; without matching signal it adds cost and risk while delivering no benefit the simpler model lacked.</div>`
     }
   },
   {
@@ -367,6 +371,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           Predicting the last word of "I grew up in France… I speak fluent ___" needs information from many words earlier. A vanilla RNN's gradient to that distant cue has often vanished by training time; an LSTM's gates carry the signal forward, letting it learn the long-range link.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          An <strong>RNN</strong> reads a sentence the way you read aloud — one word at a time, holding a running sense of the meaning so far (the <strong>hidden state</strong>). That works for short phrases. But imagine relaying a long story person-to-person down a line, where each person only remembers the last few words they heard: by the end, the opening is lost — that's the <strong>vanishing gradient</strong> over a long sequence. An <strong>LSTM</strong> fixes this by giving each person a notepad with <em>gates</em>: they decide what to write down, what to keep, and what to erase — so a crucial detail from the start ("the story is set in France") can be carried, intact, all the way to the end.
         </div>`
     },
     scenario: {
@@ -374,22 +382,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Anjali</strong> builds a model to detect contradictions between distant sentences in long legal documents. She uses a vanilla RNN, expecting its hidden state to carry information across the whole document. It fails to connect sentences far apart, and training is unstable with occasional loss spikes.</p>
         <p class="prose">The failure is structural: vanilla RNNs cannot reliably learn long-range dependencies because gradients vanish over many steps. Whether Anjali recognises this — rather than concluding the task is impossible — determines if she switches to an appropriate architecture.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the RNN <em>does</em> have a hidden state spanning the document, so it looks like it should work — but the gradient never survives the distance to teach it the long-range link.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the RNN <em>does</em> have a hidden state spanning the document, so it looks like it should work — but the gradient never survives the distance to teach it the long-range link. For instance: Anjali's contradiction sits between sentence 3 and sentence 290. The RNN's hidden state technically passes through all 290 sentences, so on paper the information could carry. But during training, the gradient that would teach it "connect sentence 3 to 290" is multiplied down through hundreds of steps until it's effectively zero — so the model never learns the link, even though the architecture appears capable of it.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Use gated architectures.</strong> Anjali switches to LSTM/GRU units whose gating preserves gradients across long sequences, giving a real chance of learning distant dependencies.</p>
-        <p class="prose"><strong>2. Stabilise training.</strong> She adds gradient clipping to stop the occasional exploding-gradient loss spikes.</p>
-        <p class="prose"><strong>3. Consider attention/Transformers for long contexts.</strong> Because the dependencies span very long documents, she evaluates attention-based models that connect distant positions directly, often outperforming RNNs here.</p>
+        <p class="prose"><strong>1. Use gated architectures.</strong> Anjali switches to LSTM/GRU units whose gating preserves gradients across long sequences, giving a real chance of learning distant dependencies. The gates act like a protected memory lane: an LSTM can carry a value across many steps almost unchanged (the gradient passes through near-1 instead of being repeatedly shrunk), so the signal linking sentence 3 to sentence 290 actually survives training — the notepad from the analogy.</p>
+        <p class="prose"><strong>2. Stabilise training.</strong> She adds gradient clipping to stop the occasional exploding-gradient loss spikes. <strong>Gradient clipping</strong> caps the size of each update, so when the long unrolled chain occasionally produces a huge gradient, it's trimmed to a safe ceiling instead of blowing the weights to NaN — which is what those loss spikes were.</p>
+        <p class="prose"><strong>3. Consider attention/Transformers for long contexts.</strong> Because the dependencies span very long documents, she evaluates attention-based models that connect distant positions directly, often outperforming RNNs here. Attention lets sentence 290 look straight back at sentence 3 in a single step rather than relaying through 287 intermediate states, so there's no long chain for the gradient to vanish along — structurally better suited to her long-range task.</p>
         <div class="callout callout-good"><strong>The result:</strong> a model that actually links distant sentences, trained stably — by matching the architecture to the long-range nature of the task.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Expecting vanilla RNNs to capture long-range dependencies.</strong> Vanishing gradients over many steps make this unreliable; the architecture is the limit, not the effort.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Ignoring instability.</strong> Loss spikes from exploding gradients won't fix themselves; gradient clipping and a sensible learning rate are needed.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Concluding the task is impossible.</strong> Failure with the wrong model isn't evidence the problem is unsolvable; gated units or attention often succeed.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Expecting vanilla RNNs to capture long-range dependencies.</strong> Vanishing gradients over many steps make this unreliable; the architecture is the limit, not the effort. <strong>How:</strong> training signal must travel back through every step between the two linked elements, multiplied by a factor below 1 at each; over hundreds of steps the product collapses to near zero, so no amount of training time delivers a usable gradient to the distant connection.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Ignoring instability.</strong> Loss spikes from exploding gradients won't fix themselves; gradient clipping and a sensible learning rate are needed. <strong>How:</strong> the same long multiplication that can vanish can also explode when factors exceed 1, producing a sudden huge update that throws the weights off a cliff; without clipping, each spike corrupts training and may push the loss to NaN.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Concluding the task is impossible.</strong> Failure with the wrong model isn't evidence the problem is unsolvable; gated units or attention often succeed. <strong>How:</strong> the failure was a property of the vanilla RNN's gradient flow, not of the data; swapping to an architecture built for long-range links (LSTM, Transformer) changes the mechanics entirely, so the same task becomes learnable.</div>`
     }
   },
   {
@@ -402,6 +410,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           To resolve "it" in "the trophy didn't fit in the suitcase because it was too big," the model must link "it" to "trophy." Self-attention does this in one direct step regardless of distance, where an RNN would have to carry the signal across every intervening word.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Picture a meeting where, to understand any one remark, every person can instantly glance at every other person and weigh whose input matters most — that's <strong>self-attention</strong>, and because everyone consults everyone at once it's fast (<strong>parallel</strong>) and links distant points directly. Since glances alone don't convey seating order, each chair is labelled (<strong>positional encoding</strong>) so the model knows the sequence. The catch: in a 10-person meeting that's 100 glance-pairs; in a 1,000-person meeting it's a million. Every doubling of people <em>quadruples</em> the glances — the <strong>quadratic cost</strong> that makes very long inputs explode.
         </div>`
     },
     scenario: {
@@ -409,22 +421,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Vivek</strong> adopts a standard Transformer for document analysis and, wanting full context, feeds in extremely long sequences whole. Memory usage explodes and throughput collapses — the model becomes impractical to train or serve.</p>
         <p class="prose">He overlooked that full self-attention's cost grows with the <em>square</em> of sequence length. Whether Vivek accounts for this scaling determines if he engineers a workable system or fights constant out-of-memory failures.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> Transformers are celebrated for handling long-range dependencies, which makes "just feed it everything" feel right — until the quadratic cost makes very long inputs infeasible.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> Transformers are celebrated for handling long-range dependencies, which makes "just feed it everything" feel right — until the quadratic cost makes very long inputs infeasible. For instance: Vivek's documents jump from 1,000 to 8,000 tokens — an 8× longer input. He expects 8× the cost; instead attention cost rises ~64× (8 squared), because every token must attend to every other. Memory blows past the GPU limit and a job that took seconds now crashes or crawls. The capability he relied on is real, but its price grows far faster than the input length suggests.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Respect the quadratic cost.</strong> Vivek budgets for attention scaling with the square of length and sets realistic sequence limits.</p>
-        <p class="prose"><strong>2. Use efficient strategies for long inputs.</strong> He chunks long documents, or adopts efficient-attention variants designed to reduce the quadratic burden, where full context is essential.</p>
-        <p class="prose"><strong>3. Keep positional information correct.</strong> He ensures positional encodings are applied so the model retains order, especially when chunking.</p>
+        <p class="prose"><strong>1. Respect the quadratic cost.</strong> Vivek budgets for attention scaling with the square of length and sets realistic sequence limits. Knowing cost grows with length², he caps inputs at a length the hardware can serve (say 2,000 tokens) rather than discovering the ceiling through out-of-memory crashes — turning an invisible scaling trap into a planned constraint.</p>
+        <p class="prose"><strong>2. Use efficient strategies for long inputs.</strong> He chunks long documents, or adopts efficient-attention variants designed to reduce the quadratic burden, where full context is essential. <strong>Chunking</strong> splits a long document into overlapping windows processed separately (each within budget); <strong>efficient-attention</strong> variants approximate full attention so cost grows closer to linearly — both let him handle long text without the every-pair explosion.</p>
+        <p class="prose"><strong>3. Keep positional information correct.</strong> He ensures positional encodings are applied so the model retains order, especially when chunking. Since attention itself ignores order, the positional encoding is what tells the model word 1 comes before word 2; when chunking he's careful that each piece keeps correct position information, so "not guilty" doesn't get scrambled into "guilty… not."</p>
         <div class="callout callout-good"><strong>The result:</strong> a Transformer system that captures the dependencies it needs while staying within feasible memory and compute budgets.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Ignoring quadratic attention cost.</strong> Feeding very long sequences into standard attention blows up memory and compute.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming "more context is always free."</strong> Longer inputs carry a steep, non-linear cost that must be engineered around.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Dropping positional information.</strong> Forgetting positional encodings (or mishandling them when chunking) leaves the model unable to use order.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Ignoring quadratic attention cost.</strong> Feeding very long sequences into standard attention blows up memory and compute. <strong>How:</strong> attention builds a table of every token against every other, so an N-token input needs an N×N table; doubling N quadruples that table, and long inputs quickly exceed available memory.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming "more context is always free."</strong> Longer inputs carry a steep, non-linear cost that must be engineered around. <strong>How:</strong> because cost scales with the square of length, the price of extra context accelerates — the jump from 4k to 8k tokens costs far more than the jump from 1k to 2k, so "just add more context" hits a wall fast.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Dropping positional information.</strong> Forgetting positional encodings (or mishandling them when chunking) leaves the model unable to use order. <strong>How:</strong> self-attention treats its input as an unordered set, so without positional encodings "dog bites man" and "man bites dog" look identical to the model — order is information it simply cannot recover on its own.</div>`
     }
   },
   {
@@ -437,6 +449,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A face generator outputs strikingly realistic portraits — but on inspection, they're nearly all the same few faces. Each sample looks great; the <em>distribution</em> is collapsed. Quality of individual samples and diversity across them are separate things, both of which must be checked.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          A <strong>GAN</strong> is a forger versus a detective. The <strong>generator</strong> (forger) paints fake banknotes; the <strong>discriminator</strong> (detective) tries to spot fakes. Each round the forger learns from being caught and the detective learns from being fooled, so both improve — and eventually the forgeries look real. <strong>Mode collapse</strong> is the forger discovering that one particular fake reliably fools the detective and then printing <em>only that note</em> — technically passing, but with zero variety. That's why judging a GAN by a few gorgeous samples is dangerous: you must also check it produces the full <em>range</em> of the real data, not one perfect repeat.
         </div>`
     },
     scenario: {
@@ -444,22 +460,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Neha</strong> trains a GAN to generate synthetic product images for data augmentation. She picks a handful of the best outputs, shows they look convincingly real, and declares the model a success. In deployment it generates near-identical images, adding almost no useful variety.</p>
         <p class="prose">Neha evaluated realism on cherry-picked samples but never measured <em>diversity</em>, missing mode collapse. Whether she assesses the full generated distribution, not curated examples, decides if her augmentation actually helps or quietly fails.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the cherry-picked samples are genuinely realistic, so the model looks successful — the failure is in what the curation hides, not in any single image.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the cherry-picked samples are genuinely realistic, so the model looks successful — the failure is in what the curation hides, not in any single image. For instance: Neha's ten hand-picked product images are flawless, and the demo wows everyone. But she generated 10,000 and quietly chose the best ten; the other 9,990 are minor variations of the same three products. As augmentation data, the set adds almost no variety — the model learned to forge a few notes perfectly rather than the whole currency. Each image being real is exactly what makes the missing diversity so easy to overlook.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Evaluate the distribution, not curated samples.</strong> Neha assesses many uncurated outputs for both realism <em>and</em> diversity, rather than trusting a hand-picked few.</p>
-        <p class="prose"><strong>2. Watch explicitly for mode collapse.</strong> She checks whether outputs cluster into a few repeated modes and uses metrics/techniques aimed at capturing diversity.</p>
-        <p class="prose"><strong>3. Use multiple imperfect metrics plus judgement.</strong> Accepting that no single number captures generative quality, she combines quantitative measures with careful inspection across the output space.</p>
+        <p class="prose"><strong>1. Evaluate the distribution, not curated samples.</strong> Neha assesses many uncurated outputs for both realism <em>and</em> diversity, rather than trusting a hand-picked few. She inspects a large random batch (not the best ten) and asks two separate questions — do individual samples look real, <em>and</em> do they span the variety of the real data — because a model can ace the first while failing the second.</p>
+        <p class="prose"><strong>2. Watch explicitly for mode collapse.</strong> She checks whether outputs cluster into a few repeated modes and uses metrics/techniques aimed at capturing diversity. Concretely she clusters or visually groups a large sample to see if everything collapses into a handful of near-duplicates, and tracks diversity-aware metrics so the "forger printing one note" pattern shows up as a number, not just a hunch.</p>
+        <p class="prose"><strong>3. Use multiple imperfect metrics plus judgement.</strong> Accepting that no single number captures generative quality, she combines quantitative measures with careful inspection across the output space. Because generation has no single "accuracy," she triangulates — a realism score, a diversity/coverage score, and human inspection — so no one flawed metric can declare success on its own.</p>
         <div class="callout callout-good"><strong>The result:</strong> an honest read on whether the generator produces varied, realistic samples — so the synthetic data genuinely adds value.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Judging by cherry-picked samples.</strong> A few realistic outputs can hide mode collapse and tell you nothing about diversity.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Ignoring diversity entirely.</strong> Sample realism and distributional diversity are distinct; measuring only the former misses a core failure mode.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Expecting one accuracy number.</strong> Generative evaluation needs multiple metrics and judgement; demanding a single score leads to false confidence.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Judging by cherry-picked samples.</strong> A few realistic outputs can hide mode collapse and tell you nothing about diversity. <strong>How:</strong> selecting the best handful from thousands measures the model's ceiling, not its typical output; a collapsed generator can still produce a few flawless samples, so curation systematically hides the diversity failure.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Ignoring diversity entirely.</strong> Sample realism and distributional diversity are distinct; measuring only the former misses a core failure mode. <strong>How:</strong> realism asks "does each sample look real?" while diversity asks "do the samples cover the whole data range?" — a mode-collapsed model scores high on the first and low on the second, so checking only realism passes a broken model.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Expecting one accuracy number.</strong> Generative evaluation needs multiple metrics and judgement; demanding a single score leads to false confidence. <strong>How:</strong> unlike classification, generation has no ground-truth label per output to score against, so any single metric captures only one facet (realism or diversity, never both); trusting it alone gives a confident but partial picture.</div>`
     }
   }
 ];
