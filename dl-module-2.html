@@ -34,6 +34,38 @@
   .module-title { font-size:26px; font-weight:700; color:var(--text); }
   .module-progress { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:10px; }
 
+  /* Refresher primer */
+  .refresh-wrap { max-width:1100px; margin:18px auto 0; padding:0 32px; }
+  .refresh-toggle { width:100%; display:flex; align-items:center; gap:12px; padding:16px 20px; background:var(--blue-light); border:1.5px solid var(--blue-mid); border-left:3px solid var(--blue); border-radius:var(--radius); cursor:pointer; font-family:'Merriweather Sans',sans-serif; font-size:15.5px; font-weight:700; color:var(--blue-dark); text-align:left; transition:background .15s; }
+  .refresh-toggle:hover { background:var(--blue-light); border-color:var(--blue); }
+  .refresh-toggle .rt-icon { font-size:20px; flex-shrink:0; }
+  .refresh-toggle .rt-text { flex:1; }
+  .refresh-toggle .rt-sub { display:block; font-weight:400; font-size:13px; color:var(--text-dim); margin-top:3px; }
+  .refresh-toggle .rt-chev { font-size:13px; font-family:'Source Code Pro',monospace; transition:transform .2s; flex-shrink:0; }
+  .refresh-toggle.open .rt-chev { transform:rotate(180deg); }
+  .refresh-panel { display:none; margin-top:14px; background:var(--bg2); border:1.5px solid var(--border); border-radius:var(--radius); padding:30px 34px; animation:fadeIn .25s ease; }
+  .refresh-panel.open { display:block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+  .refresh-panel h3 { font-size:20px; font-weight:700; color:var(--text); margin:26px 0 10px; }
+  .refresh-panel h3:first-child { margin-top:0; }
+  .refresh-panel h4 { font-size:16px; font-weight:700; color:var(--blue-dark); margin:18px 0 6px; }
+  .refresh-panel p { font-size:16px; color:var(--text-dim); line-height:1.8; margin-bottom:12px; }
+  .refresh-panel p strong { color:var(--text); font-weight:600; }
+  .refresh-panel ul { margin:0 0 14px; padding-left:22px; }
+  .refresh-panel li { font-size:15.5px; color:var(--text-dim); line-height:1.75; margin-bottom:8px; }
+  .refresh-panel li strong { color:var(--text); font-weight:600; }
+  .rf-eg { border-left:3px solid var(--green); background:var(--green-light); padding:12px 16px; border-radius:0 8px 8px 0; margin:8px 0 16px; font-size:14.5px; line-height:1.7; color:var(--text-dim); }
+  .rf-eg .eg-label { font-size:11px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:5px; }
+  .rf-eg strong { color:var(--text); }
+  .rf-table { width:100%; border-collapse:collapse; margin:8px 0 4px; }
+  .rf-table th, .rf-table td { text-align:left; padding:10px 14px; border:1px solid var(--border); font-size:14.5px; vertical-align:top; }
+  .rf-table th { background:var(--bg3); font-weight:700; color:var(--text); }
+  .rf-table td { color:var(--text-dim); line-height:1.65; }
+  .rf-bridge { font-size:16px; color:var(--text-dim); line-height:1.8; margin:6px 0 18px; padding:14px 18px; background:var(--bg3); border-radius:8px; }
+  .rf-bridge strong { color:var(--text); font-weight:600; }
+  .refresh-close { margin-top:20px; padding:10px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .refresh-close:hover { background:var(--bg3); }
+
   /* Section pills */
   .section-pills-wrap { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 40px; overflow-x:auto; }
   .section-pills { display:flex; gap:0; }
@@ -200,6 +232,68 @@
   <div class="module-progress" id="moduleProgress">0 of 5 sections complete</div>
 </div>
 
+<div class="refresh-wrap">
+  <button class="refresh-toggle" id="refreshToggle" onclick="toggleRefresh()">
+    <span class="rt-icon">💡</span>
+    <span class="rt-text">Do you want to refresh your knowledge of Unsupervised Learning?
+      <span class="rt-sub">A quick primer on the fundamentals before you dive into the methods — open it if the sections feel fast-paced.</span>
+    </span>
+    <span class="rt-chev">▼ OPEN</span>
+  </button>
+
+  <div class="refresh-panel" id="refreshPanel">
+    <h3>Unsupervised Learning — the fundamentals</h3>
+    <p><strong>Unsupervised learning</strong> is the branch of machine learning where the data has <strong>no labels</strong> — no "correct answer" attached to each example. Instead of learning a known input-to-output mapping, the algorithm is handed a pile of raw data and asked to <em>discover structure</em> in it on its own: which points group together, which directions matter most, what shape the data really has.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Supervised learning is a student given a textbook with the answers printed in the back (labeled data). Unsupervised learning is a student handed the same textbook with <strong>no answer key</strong> and told "find the patterns" — they might notice the chapters fall into three themes, or that two topics always appear together, without anyone telling them so.
+    </div>
+
+    <h3>Why learn without labels at all?</h3>
+    <p>Labels are <strong>expensive</strong> — they usually require a human to tag each example by hand. Raw, unlabeled data, by contrast, is everywhere and nearly free. Unsupervised learning lets you extract value from that abundance, and it shines in three situations:</p>
+    <ul>
+      <li><strong>You don't know the groups in advance.</strong> You want the data to reveal its own natural categories rather than sorting it into boxes you defined.</li>
+      <li><strong>You have too many features.</strong> Hundreds of columns are hard to model and visualise; you want to compress them to the few that carry the real signal.</li>
+      <li><strong>You want to explore or visualise.</strong> Before any modelling, you want to <em>see</em> the shape of high-dimensional data.</li>
+    </ul>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      A retailer has millions of customers and no idea how to segment them. Nobody has labelled anyone as "bargain-hunter" or "loyalist" — those categories don't exist yet. Unsupervised learning can surface them from purchase behaviour alone, turning unlabeled transaction logs into actionable segments.
+    </div>
+
+    <h3>The two main jobs</h3>
+    <p>Almost everything in this module falls into one of two families:</p>
+    <h4>Clustering — grouping similar things together</h4>
+    <p>The algorithm partitions data points into groups so that points in the same group are more similar to each other than to points in other groups. <em>You</em> don't say what the groups are; the data decides.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Sorting a basket of unlabelled fruit into piles purely by appearance — the algorithm ends up with an "apple pile," a "banana pile," and an "orange pile" without ever being told the fruit names. It just notices that some fruits resemble each other.
+    </div>
+    <h4>Dimensionality reduction — simplifying without losing the essence</h4>
+    <p>The algorithm compresses data with many features into far fewer, while keeping as much of the important structure as possible — making it faster to model and possible to visualise.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Summarising a 300-page book in a 1-page synopsis. You lose the exact wording, but if done well the synopsis preserves the plot — the "essence" — so someone can still grasp what the book is about. Dimensionality reduction does this for data: fewer numbers, same gist.
+    </div>
+
+    <h3>The catch that runs through everything</h3>
+    <p>Because there is <strong>no answer key</strong>, unsupervised learning has no simple "accuracy" score, and that changes how you must work:</p>
+    <ul>
+      <li><strong>Results aren't automatically "right."</strong> The algorithm always returns <em>something</em> — clusters, components — even from meaningless input. There's no error message for "this grouping is nonsense."</li>
+      <li><strong>Your choices shape the answer.</strong> How you measure "similar" (the distance metric) and whether you put features on a common scale will change the result entirely.</li>
+      <li><strong>You must validate by judgement.</strong> Success is whether the structure is <em>useful and stable</em> — does it reappear on fresh data, and does it make sense to a domain expert?</li>
+    </ul>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Ask ten people to group the same set of photos and you'll get ten reasonable groupings (by colour, by subject, by mood). None is "wrong" — which is exactly why, without labels, you judge an unsupervised result by whether it's useful for your goal, not by a single accuracy number.
+    </div>
+
+    <p class="rf-bridge">With that foundation — no labels, two jobs (grouping and simplifying), and success judged by usefulness rather than accuracy — the most intuitive place to begin is the first job: <strong>grouping similar things together</strong>. That's <strong>Clustering</strong>, and you already do it instinctively: walk into a party and you naturally notice the cluster near the music, the circle in the kitchen, the few on the balcony — nobody labelled them, you inferred the groups from who stands near whom. The first section turns that instinct into a method. Close this primer when you're ready, and head to Clustering.</p>
+
+    <button class="refresh-close" onclick="toggleRefresh()">Close primer ▲</button>
+  </div>
+</div>
+
 <div class="section-pills-wrap">
   <div class="section-pills" id="sectionPills">
     <button class="section-pill active" data-sec="1" onclick="showSection(1)"><span class="pnum">1</span> Clustering</button>
@@ -312,7 +406,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v4';
+const CACHE_VERSION = '2026-06-09-v5';
 const MODULE_ID    = 'dl_m2';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -597,6 +691,16 @@ function buildSections() {
 }
 
 // ── Navigation ───────────────────────────────────────────────────────────────
+function toggleRefresh() {
+  var t = document.getElementById('refreshToggle');
+  var p = document.getElementById('refreshPanel');
+  if (!t || !p) return;
+  var open = p.classList.toggle('open');
+  t.classList.toggle('open', open);
+  var chev = t.querySelector('.rt-chev');
+  if (chev) chev.textContent = open ? '▲ CLOSE' : '▼ OPEN';
+}
+
 function showSection(n) {
   document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.section-pill').forEach(b => b.classList.remove('active'));
