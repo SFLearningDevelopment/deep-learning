@@ -314,7 +314,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v1';
+const CACHE_VERSION = '2026-06-09-v3';
 const MODULE_ID    = 'dl_m4';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -335,6 +335,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A U-Net encoder pools a 256×256 image down to 16×16 to capture context, then upsamples back to 256×256 for a pixel-wise mask. Skip connections feed the sharp early-layer features directly into the decoder, so edges in the output mask stay crisp instead of blurring.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of summarising a detailed photo by repeatedly shrinking it to a thumbnail. <strong>Pooling</strong> is that shrinking — each step keeps the gist ("there's a face here") while throwing away pixels, which is great for recognising <em>what</em> is present and cheap to compute. The catch shows up if someone then asks you to redraw the original at full size from the thumbnail alone (<strong>unpooling</strong>): the fine detail is simply gone, so your redraw is blurry. <strong>Skip connections</strong> are like keeping the original high-res photo on hand while you redraw, so you can copy back the sharp edges — which is exactly how segmentation models keep their outlines crisp.
         </div>`
     },
     scenario: {
@@ -342,22 +346,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Aditi</strong>, an SF vision engineer, builds a segmentation model to outline defects on manufactured parts. Her encoder pools aggressively to keep the model small, and her decoder upsamples with simple interpolation — no skip connections. The masks come out blurry and misaligned with the actual defect edges.</p>
         <p class="prose">She assumes she needs a bigger model or more data. The real issue is architectural: she pooled away the very spatial detail the task depends on, and gave the decoder no way to recover it. Recognising that determines whether she fixes the architecture or wastes weeks scaling the wrong thing.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the model trains and produces plausible-looking masks — they're just systematically imprecise, and the cause is information thrown away early, not model capacity.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the model trains and produces plausible-looking masks — they're just systematically imprecise, and the cause is information thrown away early, not model capacity. For instance: Aditi's masks correctly find roughly <em>where</em> each defect is, so at a glance the model looks like it works. But every outline is a few pixels off and the edges are soft — useless for measuring a defect's exact size. She doubles the model's width and adds more training images; nothing sharpens, because the detail needed for crisp edges was pooled away in the encoder and no amount of capacity downstream can invent it back.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Add skip connections.</strong> Aditi adopts a U-Net-style design that passes high-resolution encoder features to the matching decoder stage, so fine detail guides the upsampling.</p>
-        <p class="prose"><strong>2. Pool proportionate to the task.</strong> She balances downsampling for context against the spatial precision segmentation requires, rather than pooling away detail for the sake of a smaller model.</p>
-        <p class="prose"><strong>3. Use learnable upsampling where appropriate.</strong> She uses transposed convolutions or learned upsampling instead of crude interpolation alone, letting the decoder reconstruct sharper boundaries.</p>
+        <p class="prose"><strong>1. Add skip connections.</strong> Aditi adopts a U-Net-style design that passes high-resolution encoder features to the matching decoder stage, so fine detail guides the upsampling. Mechanically, each decoder stage receives <em>two</em> inputs — the upsampled coarse features (the "what") plus the saved high-res features from the matching encoder stage (the "where") — so it can place the coarse understanding precisely, like redrawing with the original photo in hand.</p>
+        <p class="prose"><strong>2. Pool proportionate to the task.</strong> She balances downsampling for context against the spatial precision segmentation requires, rather than pooling away detail for the sake of a smaller model. Concretely she pools less aggressively (or uses strided convolutions she can tune), keeping enough resolution that a few-pixel defect still occupies more than a fraction of a cell at the bottleneck.</p>
+        <p class="prose"><strong>3. Use learnable upsampling where appropriate.</strong> She uses transposed convolutions or learned upsampling instead of crude interpolation alone, letting the decoder reconstruct sharper boundaries. <strong>Transposed convolution</strong> has trainable weights, so unlike fixed interpolation (which just averages neighbouring pixels) it can <em>learn</em> how to expand features into sharp edges rather than smearing them.</p>
         <div class="callout callout-good"><strong>The result:</strong> sharp, well-aligned defect masks — achieved by preserving and reusing spatial detail, not by brute-force scaling.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Aggressive pooling with no skip connections.</strong> Discarding spatial detail in the encoder and giving the decoder no high-resolution path produces blurry, misaligned dense outputs.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Crude upsampling to "undo" pooling.</strong> Simple interpolation cannot recover detail that pooling destroyed; the information is already gone.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Misdiagnosing blur as a capacity problem.</strong> Scaling the model or adding data won't fix an architecture that threw the needed detail away upstream.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Aggressive pooling with no skip connections.</strong> Discarding spatial detail in the encoder and giving the decoder no high-resolution path produces blurry, misaligned dense outputs. <strong>How:</strong> after pooling 256×256 down to 16×16, each bottleneck cell represents a 16×16 patch of the original; with no skip path, the decoder must guess every pixel in that patch from one value, so edges can only ever be approximate.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Crude upsampling to "undo" pooling.</strong> Simple interpolation cannot recover detail that pooling destroyed; the information is already gone. <strong>How:</strong> interpolation only averages between known low-res values — it has no record of what the discarded pixels were, so it can smooth but never reconstruct the lost edge, like enlarging a thumbnail.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Misdiagnosing blur as a capacity problem.</strong> Scaling the model or adding data won't fix an architecture that threw the needed detail away upstream. <strong>How:</strong> capacity and data help a model learn patterns from the information it receives; if the information itself was destroyed by pooling before the decoder, there is nothing for extra capacity to learn from — the fix must be architectural.</div>`
     }
   },
   {
@@ -370,6 +374,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A small CNN reaches ~99% test accuracy on handwritten digits. Adding mild rotations and shifts during training makes it robust to the natural slant and position variation of real handwriting — provided the split was made by source image <em>before</em> augmenting, so no augmented twin appears in both sets.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Why a CNN suits images: imagine looking for a particular doodle anywhere on a page. A <strong>convolution</strong> is a small stencil you slide across the whole page — the same stencil finds the doodle whether it's top-left or bottom-right (<strong>weight sharing</strong> and position-tolerance), instead of needing a separate detector for every spot. Now the trap, <strong>data leakage</strong>: it's like letting a student see the exact exam questions during study by accident. If you photocopy each practice problem, jumble the copies, and only <em>then</em> split into "study" and "exam" piles, near-identical copies land in both — the student aces the "exam" by recognition, and you learn nothing about real ability. Split first, copy (augment) only the study pile.
         </div>`
     },
     scenario: {
@@ -377,22 +385,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Manish</strong> builds a digit classifier for a form-processing pipeline. He augments his dataset with rotations and shifts to boost robustness, shuffles everything together, then splits into train and test. He reports a dazzling 99.8% test accuracy — but in deployment the model stumbles.</p>
         <p class="prose">The gap comes from <em>data leakage</em>: by augmenting before splitting, near-duplicate copies of the same source digit landed in both train and test. His test set was never truly unseen. Whether Manish spots this determines if he trusts a fake number or measures real generalisation.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the leak makes the headline metric look <em>better</em>, so nothing in the reported results signals a problem — it surfaces only in deployment.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the leak makes the headline metric look <em>better</em>, so nothing in the reported results signals a problem — it surfaces only in deployment. For instance: Manish's 99.8% test score sails through review precisely because it's so high — a suspiciously low number would have prompted questions, but a great one gets celebrated. In production the model meets genuinely new handwriting and drops to the low 90s or worse, because the "test" it aced was really rotated copies of digits it had already studied. The flaw was invisible exactly because it flattered the metric everyone trusts.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Split by source image, then augment.</strong> Manish partitions the original images into train/test first, and only augments <em>within</em> the training set, so no augmented twin can cross the boundary.</p>
-        <p class="prose"><strong>2. Treat the test set as sacred.</strong> He never augments, tunes on, or peeks at the test set; it is touched once, at the end, for an honest estimate.</p>
-        <p class="prose"><strong>3. Validate against realistic data.</strong> He checks performance on genuinely fresh samples resembling deployment conditions, not just the held-out split.</p>
+        <p class="prose"><strong>1. Split by source image, then augment.</strong> Manish partitions the original images into train/test first, and only augments <em>within</em> the training set, so no augmented twin can cross the boundary. The order is everything: splitting on the originals guarantees that every rotated or shifted copy of a given digit stays on the same side of the line, so the test set contains only digits the model has never seen in any form.</p>
+        <p class="prose"><strong>2. Treat the test set as sacred.</strong> He never augments, tunes on, or peeks at the test set; it is touched once, at the end, for an honest estimate. Each time you adjust the model after looking at test performance, you're quietly fitting to it — so the only way it stays an honest proxy for unseen data is to use it exactly once.</p>
+        <p class="prose"><strong>3. Validate against realistic data.</strong> He checks performance on genuinely fresh samples resembling deployment conditions, not just the held-out split. For example he tests on handwriting from a different batch of writers or scanners than the training data came from, since real deployment will differ from even a clean held-out split drawn from the same source.</p>
         <div class="callout callout-good"><strong>The result:</strong> a reported accuracy that actually predicts deployment behaviour, because the evaluation data was truly unseen.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Augmenting before splitting.</strong> This leaks near-duplicate images across train and test, inflating the test score and producing a number that doesn't hold up.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Reporting training accuracy as success.</strong> Without a clean held-out set, accuracy can reflect memorisation rather than generalisation.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Tuning on the test set.</strong> Repeatedly adjusting the model against the test set quietly turns it into a second training set, erasing its value as an unbiased estimate.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Augmenting before splitting.</strong> This leaks near-duplicate images across train and test, inflating the test score and producing a number that doesn't hold up. <strong>How:</strong> a rotated copy of a digit is almost identical to its original; if one lands in train and the other in test, the model effectively memorised the test item during training, so the "test" measures recall, not generalisation.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Reporting training accuracy as success.</strong> Without a clean held-out set, accuracy can reflect memorisation rather than generalisation. <strong>How:</strong> a high-capacity network can memorise its training set outright, scoring near-perfect on it while having learned nothing that transfers — so training accuracy alone cannot distinguish learning from memorising.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Tuning on the test set.</strong> Repeatedly adjusting the model against the test set quietly turns it into a second training set, erasing its value as an unbiased estimate. <strong>How:</strong> every tweak made because it raised test accuracy bakes information about the test set into the model; after enough rounds the test score reflects how well you fitted that specific set, not unseen data.</div>`
     }
   },
   {
@@ -405,6 +413,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A 152-layer ResNet trains successfully because each residual block can learn a small adjustment on top of an identity mapping. The same depth in a plain network without skips would be far harder to optimise and might score <em>worse</em> than a shallower version.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of editing a document through a long chain of reviewers. In a <strong>plain</strong> chain, each reviewer rewrites the whole document from scratch before passing it on — by the 50th reviewer the original meaning has drifted badly (deep plain networks degrade). A <strong>residual connection</strong> changes the rule: each reviewer receives the previous version <em>and</em> only writes down their suggested <em>changes</em>, so the good content always survives and edits accumulate cleanly — which is why 152-layer ResNets train when 152-layer plain nets don't. Separately, picking an architecture is like choosing a vehicle: the fastest race car (top leaderboard model) is useless if your route is a narrow mountain trail (a phone's <strong>latency/memory budget</strong>) — you choose the vehicle that fits the road.
         </div>`
     },
     scenario: {
@@ -412,22 +424,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Sana</strong> is tasked with an on-device image classifier for a mobile app. Under pressure to maximise accuracy, she picks the largest, highest-scoring architecture from a public leaderboard and fine-tunes it. Offline accuracy is superb — but on a mid-range phone it cannot run anywhere near real time, and the feature is unusable.</p>
         <p class="prose">Sana optimised for the wrong objective. The model's benchmark accuracy was never the binding constraint; on-device latency and memory were. Whether she reframes the problem around deployment limits determines if the feature ships at all.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> by the metric she was watching (accuracy), she made the "best" choice — the failure only appears when the model meets the real hardware budget.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> by the metric she was watching (accuracy), she made the "best" choice — the failure only appears when the model meets the real hardware budget. For instance: Sana's chosen model scores 88% offline versus 84% for a lean mobile architecture, so on the spreadsheet it's clearly "better." But on a mid-range phone it takes 3 seconds per image and exhausts memory, while the 84% model runs in 50 milliseconds. The 4-point accuracy edge is worthless because the feature can't run — she optimised the number she was looking at instead of the constraint that actually decided success.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Define the deployment budget first.</strong> Sana establishes the target latency, memory, and power envelope for the phone before choosing an architecture.</p>
-        <p class="prose"><strong>2. Choose an efficient architecture that meets the accuracy bar within that budget.</strong> She selects a mobile-efficient design and verifies it clears the minimum accuracy needed for the feature — rather than maximising accuracy in the abstract.</p>
-        <p class="prose"><strong>3. Use residual/normalised designs for trainability.</strong> Where depth helps, she relies on residual connections and normalisation so the network actually trains well at that depth.</p>
+        <p class="prose"><strong>1. Define the deployment budget first.</strong> Sana establishes the target latency, memory, and power envelope for the phone before choosing an architecture. By fixing the constraints up front — say "under 100 ms per image, under 50 MB, no battery drain spike" — she turns architecture selection into "what's the most accurate model that fits this box," rather than "what's most accurate, constraints be damned."</p>
+        <p class="prose"><strong>2. Choose an efficient architecture that meets the accuracy bar within that budget.</strong> She selects a mobile-efficient design and verifies it clears the minimum accuracy needed for the feature — rather than maximising accuracy in the abstract. Mobile-efficient families (e.g. MobileNet-style) use cheaper convolution structures that cut compute dramatically for a small accuracy cost, so they hit the latency budget while still clearing the feature's accuracy floor.</p>
+        <p class="prose"><strong>3. Use residual/normalised designs for trainability.</strong> Where depth helps, she relies on residual connections and normalisation so the network actually trains well at that depth. Residual "change-only" blocks plus batch normalisation keep gradients healthy through many layers, so added depth improves accuracy instead of degrading it — the difference between depth that helps and depth that hurts.</p>
         <div class="callout callout-good"><strong>The result:</strong> a model that runs in real time on-device and is accurate enough for the task — the architecture chosen against the real constraints.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Choosing architecture by leaderboard accuracy alone.</strong> Ignoring latency, memory, and power yields a model that can't run in its target environment.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming deeper is always better.</strong> Plain networks degrade past a point; depth needs residuals/normalisation to help rather than hurt.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Deferring deployment constraints to the end.</strong> Treating latency/memory as an afterthought means discovering too late that the chosen model is unusable.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Choosing architecture by leaderboard accuracy alone.</strong> Ignoring latency, memory, and power yields a model that can't run in its target environment. <strong>How:</strong> leaderboards rank on accuracy measured on powerful servers with no time limit; that ranking says nothing about whether the model fits a phone's millisecond-and-megabyte budget, so the "winner" can be physically unrunnable on device.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming deeper is always better.</strong> Plain networks degrade past a point; depth needs residuals/normalisation to help rather than hurt. <strong>How:</strong> in a plain deep network the gradient signal weakens and the optimiser struggles to coordinate so many layers, so beyond a depth the network actually trains <em>worse</em> — residual shortcuts are what let depth keep paying off.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Deferring deployment constraints to the end.</strong> Treating latency/memory as an afterthought means discovering too late that the chosen model is unusable. <strong>How:</strong> architecture decisions are expensive to reverse once training and tuning are done; if the latency budget is only checked at the end, you find out the whole pipeline was built around an unshippable model after sinking the effort.</div>`
     }
   },
   {
@@ -440,6 +452,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A team with only 2,000 labelled medical images fine-tunes a network pre-trained on a million general images. The pre-trained edge/texture/shape features transfer, and the model reaches strong accuracy that training from scratch on 2,000 images never could — as long as inputs are preprocessed exactly as the base model expects.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          <strong>Transfer learning</strong> from a model zoo is like hiring an experienced chef and teaching them your specific menu, instead of training a cook from zero. They already know knife skills and flavour (general features learned on a million images); you just teach the few dishes you serve (<strong>fine-tuning</strong> on your small dataset) — far faster than starting from scratch. Two real-world cautions follow the analogy: the chef expects ingredients prepped <em>their</em> usual way (<strong>matching preprocessing</strong> — same input size and normalisation, or their skills misfire), and you should check their references and contract before putting their cooking on your commercial menu (<strong>licence and data provenance</strong>).
         </div>`
     },
     scenario: {
@@ -447,22 +463,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Farhan</strong> grabs a high-performing pre-trained model from a public zoo and fine-tunes it on his company's sensitive customer images for a commercial product. He never checks the model's licence or what data it was originally trained on, and ships it.</p>
         <p class="prose">Months later, legal flags that the model's licence forbids commercial use and its training data has contested provenance. The technical work was sound; the due-diligence gap is what creates exposure. Whether Farhan treats provenance and licensing as part of the engineering decision is the real issue.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> nothing in the model's accuracy or behaviour reveals the licensing/provenance problem — it's invisible until someone asks the legal question.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> nothing in the model's accuracy or behaviour reveals the licensing/provenance problem — it's invisible until someone asks the legal question. For instance: Farhan's fine-tuned model performs beautifully and passes every technical review, so the team has zero signal anything is wrong. The problem lives entirely outside the metrics — in a licence file that says "research only" and a training set that scraped copyrighted images. It surfaces only when legal or a customer audit asks where the weights came from, by which point the product is already shipped.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Check licence and provenance before use.</strong> Farhan verifies the model's licence permits his commercial use and reviews what data it was trained on, treating this as a gating step.</p>
-        <p class="prose"><strong>2. Match preprocessing to the base model.</strong> He feeds inputs with the exact normalisation and resolution the pre-trained model expects, avoiding silent degradation.</p>
-        <p class="prose"><strong>3. Assess inherited bias.</strong> He evaluates the fine-tuned model for biases that may have come from the base model's training data, especially given sensitive use.</p>
+        <p class="prose"><strong>1. Check licence and provenance before use.</strong> Farhan verifies the model's licence permits his commercial use and reviews what data it was trained on, treating this as a gating step. Concretely, he reads the model card / licence file for terms like "non-commercial" or "research only," and checks the training-data description for copyrighted or restricted sources — making "may we legally ship this?" a yes/no gate before any engineering effort.</p>
+        <p class="prose"><strong>2. Match preprocessing to the base model.</strong> He feeds inputs with the exact normalisation and resolution the pre-trained model expects, avoiding silent degradation. The model learned its features on inputs scaled a specific way (e.g. resized to 224×224, normalised with particular mean/std values); feeding differently-prepped images shifts every input away from what the features expect, quietly dropping accuracy — so he copies the base model's documented preprocessing exactly.</p>
+        <p class="prose"><strong>3. Assess inherited bias.</strong> He evaluates the fine-tuned model for biases that may have come from the base model's training data, especially given sensitive use. Because fine-tuning keeps most of the pre-trained weights, any skew in the original data (e.g. under-representation of certain groups) carries over — so he tests performance separately across the relevant subgroups rather than trusting one aggregate score.</p>
         <div class="callout callout-good"><strong>The result:</strong> the benefits of transfer learning captured safely — strong performance from limited data, without legal, preprocessing, or bias surprises.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Ignoring licence and provenance.</strong> Shipping a zoo model commercially without checking its terms and data origin creates real legal and ethical risk.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Mismatched preprocessing.</strong> Feeding inputs scaled or sized differently from the base model's training quietly wrecks performance.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Assuming pre-trained means unbiased.</strong> Inherited biases from the base model's data can propagate; they must be assessed, not assumed away.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Ignoring licence and provenance.</strong> Shipping a zoo model commercially without checking its terms and data origin creates real legal and ethical risk. <strong>How:</strong> weights carry a licence just like code; a "research-only" or restrictively-licensed model used in a paid product is a contract/copyright violation regardless of how well it performs — performance can't cure a licensing breach.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Mismatched preprocessing.</strong> Feeding inputs scaled or sized differently from the base model's training quietly wrecks performance. <strong>How:</strong> the learned filters expect inputs in a specific numeric range and size; wrong normalisation shifts every pixel value away from what the filters were tuned for, so activations land in the wrong regime and accuracy drops with no error to flag it.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Assuming pre-trained means unbiased.</strong> Inherited biases from the base model's data can propagate; they must be assessed, not assumed away. <strong>How:</strong> fine-tuning adjusts only a thin top layer or nudges existing weights, so the representations — and any demographic or contextual skew baked into them during pre-training — are largely retained and resurface in your task.</div>`
     }
   },
   {
@@ -475,6 +491,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A classifier distinguishes wolves from huskies with high accuracy. Saliency maps reveal it's keying on <em>snow</em> in the background, not the animals. Accurate on the benchmark, useless in the field — a failure only visible by looking at what the model attends to.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Imagine a student who aces every practice test, and you want to know <em>why</em>. <strong>Visualising activations</strong> is like asking them to underline which words in each question drove their answer. If they're underlining the actual problem, great. But you might discover they're underlining the question <em>number</em> — they'd simply memorised "question 4's answer is always C." High score, hollow understanding. A <strong>saliency map</strong> is that underline for an image: it highlights which pixels drove the prediction, exposing a model that's secretly answering by the "question number" (snowy background) rather than the content (the animal).
         </div>`
     },
     scenario: {
@@ -482,22 +502,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Deepa</strong> ships a high-accuracy animal classifier after strong test-set numbers. Her team never visualised activations — accuracy was high, so why bother? In production, performance collapses on photos taken in different settings.</p>
         <p class="prose">Post-hoc saliency maps show the model had been keying on grassy backgrounds, not the animals themselves. The benchmark hid a spurious shortcut. Whether Deepa builds interpretability checks into her pre-deployment process determines if this recurs on the next model.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the model's accuracy was genuinely high on the test set — the shortcut only fails when the spurious cue (grass) isn't present, i.e. under distribution shift.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the model's accuracy was genuinely high on the test set — the shortcut only fails when the spurious cue (grass) isn't present, i.e. under distribution shift. For instance: Deepa's test set, drawn from the same photo collection as training, mostly shows animals on grass — so a model keying on grass scores 95% honestly. It looks done. In production, users upload pets indoors, on snow, in cars; the grass cue vanishes and accuracy craters. The benchmark couldn't catch it because the benchmark shared the very bias the model exploited.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Inspect activations and saliency before deployment.</strong> Deepa makes interpretability checks a standard pre-ship step, confirming the model attends to the actual subject, not the background.</p>
-        <p class="prose"><strong>2. Probe for spurious correlations.</strong> She tests on images where the suspected shortcut (e.g. background) is altered, to see if predictions wrongly depend on it.</p>
-        <p class="prose"><strong>3. Fix the data or model if a shortcut is found.</strong> She addresses biased backgrounds through augmentation or rebalancing so the model learns the intended features.</p>
+        <p class="prose"><strong>1. Inspect activations and saliency before deployment.</strong> Deepa makes interpretability checks a standard pre-ship step, confirming the model attends to the actual subject, not the background. Concretely, she generates saliency maps for a sample of correct predictions and confirms the highlighted pixels sit <em>on the animal</em>; if they light up the background instead, the high accuracy is a warning, not a green light.</p>
+        <p class="prose"><strong>2. Probe for spurious correlations.</strong> She tests on images where the suspected shortcut (e.g. background) is altered, to see if predictions wrongly depend on it. For example she pastes the same animal onto different backgrounds (or masks the background out) — if the prediction flips when only the background changes, she's proven the model is keying on the cue, not the subject.</p>
+        <p class="prose"><strong>3. Fix the data or model if a shortcut is found.</strong> She addresses biased backgrounds through augmentation or rebalancing so the model learns the intended features. By adding training images that break the spurious correlation (animals on varied backgrounds), she removes the easy shortcut, forcing the model to rely on the animal itself to get the answer right.</p>
         <div class="callout callout-good"><strong>The result:</strong> a model verified to be right for the <em>right</em> reasons, far more likely to hold up under real-world distribution shift.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Trusting accuracy without inspecting attention.</strong> High test accuracy can mask reliance on spurious cues that visualisation would reveal.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Skipping interpretability before deployment.</strong> Treating visualisation as optional means shortcuts surface only after they fail in production.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring distribution shift.</strong> A model right for the wrong reasons works on the benchmark and breaks the moment the spurious cue disappears.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Trusting accuracy without inspecting attention.</strong> High test accuracy can mask reliance on spurious cues that visualisation would reveal. <strong>How:</strong> accuracy only counts whether the answer was right, not why; a model exploiting a background shortcut produces correct answers on a biased test set, so the number looks identical to a model that genuinely learned the subject.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Skipping interpretability before deployment.</strong> Treating visualisation as optional means shortcuts surface only after they fail in production. <strong>How:</strong> a shortcut is invisible to any metric computed on data that shares the same bias; the only way to catch it pre-launch is to look directly at what the model attends to, so skipping that check guarantees the discovery happens in the field.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Ignoring distribution shift.</strong> A model right for the wrong reasons works on the benchmark and breaks the moment the spurious cue disappears. <strong>How:</strong> the shortcut holds only while real-world inputs match the training distribution; production data inevitably differs (new backgrounds, lighting, devices), and the moment the crutch cue is absent the model has nothing real to fall back on.</div>`
     }
   },
   {
@@ -510,6 +530,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A stop-sign classifier is 99% accurate on clean images. An attacker adds a perturbation invisible to drivers, and the model reads the sign as "speed limit 80." The clean accuracy was real; it simply said nothing about resistance to a deliberate attack.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          Think of an <strong>adversarial example</strong> as an optical illusion designed specifically to fool one particular viewer. To you, two photos of a panda look identical; but a few pixels nudged in just the right pattern — imperceptible to humans — push the model confidently to "gibbon." It's like a forged signature so precise that the bank's scanner accepts it while a person sees nothing odd. The crucial lesson: a model scoring 99% on normal images can still be trivially fooled on purpose, so <strong>clean accuracy and robustness are different things</strong> — the way being a fast runner says nothing about whether you can defend against an ambush.
         </div>`
     },
     scenario: {
@@ -517,22 +541,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Gopal</strong> deploys a CNN as part of a security-sensitive access-control system, validating it only on clean-image accuracy, which is excellent. He treats the model as done. Later, attackers craft perturbed inputs that look normal to a human guard but reliably fool the model, defeating the system.</p>
         <p class="prose">Gopal validated against the wrong threat model. For a security-critical system, clean accuracy is necessary but nowhere near sufficient. Whether he tests and hardens for adversarial robustness before deployment is what separates a secure system from an exploitable one.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> every standard metric looked great, because the danger isn't random error — it's a deliberate adversary the clean test set never represents.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> every standard metric looked great, because the danger isn't random error — it's a deliberate adversary the clean test set never represents. For instance: Gopal's access system scores 99.5% on the clean test set, passes QA, and ships. But a test set is a sample of <em>natural</em> inputs; it contains no maliciously crafted ones, so it literally cannot measure attack resistance. An attacker then prints a subtly perturbed face that the model accepts as an authorised user — a failure mode that was never in any metric Gopal looked at, because no benchmark of ordinary photos can surface it.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Define the threat model.</strong> Gopal recognises that a security system faces adversaries and that clean accuracy alone is an inadequate validation.</p>
-        <p class="prose"><strong>2. Test adversarial robustness.</strong> He evaluates the model against known attack methods to measure how easily it can be fooled, before trusting it.</p>
-        <p class="prose"><strong>3. Harden the model.</strong> He applies defences such as adversarial training and adds system-level safeguards (e.g. secondary checks), accepting the trade-off against clean accuracy where security demands it.</p>
+        <p class="prose"><strong>1. Define the threat model.</strong> Gopal recognises that a security system faces adversaries and that clean accuracy alone is an inadequate validation. Defining the threat model means stating explicitly who might attack, with what access and effort — which reframes "is it accurate?" into "can a motivated attacker fool it?", a question clean metrics never answer.</p>
+        <p class="prose"><strong>2. Test adversarial robustness.</strong> He evaluates the model against known attack methods to measure how easily it can be fooled, before trusting it. Concretely, he runs standard attack algorithms (which deliberately craft perturbations to flip predictions) and measures accuracy <em>under attack</em> — a separate, much harsher number than clean accuracy that reveals the true exposure.</p>
+        <p class="prose"><strong>3. Harden the model.</strong> He applies defences such as adversarial training and adds system-level safeguards (e.g. secondary checks), accepting the trade-off against clean accuracy where security demands it. <strong>Adversarial training</strong> mixes crafted attack examples into the training set so the model learns to resist them; he pairs it with non-ML safeguards (a second factor, liveness checks) so a single fooled prediction can't by itself grant access.</p>
         <div class="callout callout-good"><strong>The result:</strong> an access system evaluated and hardened against the adversaries it will actually face, rather than one that only looks safe on clean benchmarks.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Validating security systems on clean accuracy only.</strong> This ignores the entire adversarial threat model the system exists to withstand.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming clean accuracy implies robustness.</strong> The two are distinct; a strong clean score reveals nothing about resistance to perturbations.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Shipping without hardening.</strong> Deploying to a security-critical setting with no robustness testing or defences leaves a known, exploitable weakness.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Validating security systems on clean accuracy only.</strong> This ignores the entire adversarial threat model the system exists to withstand. <strong>How:</strong> a clean test set samples natural inputs, which by definition contain no crafted attacks; measuring on it tells you nothing about behaviour under deliberate perturbation — the exact case a security system must survive.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Assuming clean accuracy implies robustness.</strong> The two are distinct; a strong clean score reveals nothing about resistance to perturbations. <strong>How:</strong> models can carve decision boundaries that are accurate on real data yet sit razor-thin next to it, so a tiny crafted nudge crosses the boundary — high clean accuracy and high fragility coexist comfortably.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Shipping without hardening.</strong> Deploying to a security-critical setting with no robustness testing or defences leaves a known, exploitable weakness. <strong>How:</strong> undefended models are reliably foolable by standard, publicly available attack methods; shipping one to a security context is leaving a door that any informed attacker already knows how to open.</div>`
     }
   },
   {
@@ -545,6 +569,10 @@ const SECTION_DATA = [
         <div class="example-block">
           <div class="ex-label">Worked example</div>
           A model is pre-trained to predict how much each image was rotated. To do that well it must learn what objects normally look like (sky up, faces upright). Those learned representations then fine-tune efficiently on a small labelled classification set — far better than training from scratch.
+        </div>
+        <div class="example-block">
+          <div class="ex-label">Another example</div>
+          <strong>Self-supervised learning</strong> is like learning a language by reading millions of books with no teacher: you cover the next word and try to guess it, and the text itself tells you if you were right. No one labelled anything — the data supplies its own answers. That guessing game is the <strong>pretext task</strong>, and solving it forces real understanding of grammar and meaning that later transfers to actual tasks. The danger is a pretext task with a <strong>trivial shortcut</strong>: if you could "guess the hidden word" just by noticing it's always the last word before a page number, you'd ace the game while learning nothing about language — exactly how a badly designed pretext task produces useless features.
         </div>`
     },
     scenario: {
@@ -552,22 +580,22 @@ const SECTION_DATA = [
       html: `
         <p class="prose"><strong>Ishan</strong> designs a self-supervised pretext task to pre-train an image encoder. His task can be solved by exploiting compression artefacts at image borders rather than by understanding image content. Pre-training "succeeds" — the pretext loss drops nicely — but downstream transfer to the real classification task is poor.</p>
         <p class="prose">The model found a shortcut that satisfied the pretext task without learning meaningful features. Whether Ishan recognises that the pretext design is the problem, not the amount of data, decides if he fixes the task or chases dead ends.</p>
-        <div class="callout"><strong>Why this is harder than it looks:</strong> the pretext task's own loss looks great, masking that the model learned a trivial trick instead of transferable structure.</div>`
+        <div class="callout"><strong>Why this is harder than it looks:</strong> the pretext task's own loss looks great, masking that the model learned a trivial trick instead of transferable structure. For instance: Ishan's pretext loss plummets to near-zero and the training curves look textbook-perfect — every signal he's watching says "success." But the model achieved that by reading JPEG compression artefacts at the image borders, a cue that has nothing to do with image content. When he fine-tunes for actual classification, the features are worthless and accuracy barely beats random. The pretext metric was measuring the shortcut, not the learning.</div>`
     },
     ideal: {
       heading: 'The ideal approach',
       html: `
-        <p class="prose"><strong>1. Design pretext tasks that resist shortcuts.</strong> Ishan reworks the task so it cannot be solved by trivial artefacts (e.g. removing border cues, using stronger augmentations), forcing the model to engage with content.</p>
-        <p class="prose"><strong>2. Judge success by downstream transfer, not pretext loss.</strong> He measures the learned representations on the actual target task, treating that — not a low pretext loss — as the real signal of quality.</p>
-        <p class="prose"><strong>3. Use established self-supervised methods as a baseline.</strong> He compares against proven approaches (contrastive or masked-modelling methods) known to learn transferable features.</p>
+        <p class="prose"><strong>1. Design pretext tasks that resist shortcuts.</strong> Ishan reworks the task so it cannot be solved by trivial artefacts (e.g. removing border cues, using stronger augmentations), forcing the model to engage with content. The principle: close every cheap escape route. By cropping away borders and applying heavy augmentations, he removes the artefact crutch, so the only remaining way to solve the pretext task is to actually understand the image content.</p>
+        <p class="prose"><strong>2. Judge success by downstream transfer, not pretext loss.</strong> He measures the learned representations on the actual target task, treating that — not a low pretext loss — as the real signal of quality. A low pretext loss only proves the model solved the game (possibly via a shortcut); the honest test is freezing the learned features and checking how well they fine-tune on the real classification task, which a shortcut cannot fake.</p>
+        <p class="prose"><strong>3. Use established self-supervised methods as a baseline.</strong> He compares against proven approaches (contrastive or masked-modelling methods) known to learn transferable features. <strong>Contrastive</strong> methods train the model to pull together two augmented views of the same image and push apart different images; <strong>masked-modelling</strong> hides patches and asks the model to reconstruct them — both are battle-tested designs whose shortcuts have already been engineered out, giving him a reliable yardstick.</p>
         <div class="callout callout-good"><strong>The result:</strong> a pretext task that compels genuine representation learning, yielding features that fine-tune well on the downstream task.</div>`
     },
     avoid: {
       heading: 'What not to do',
       html: `
-        <div class="callout callout-bad"><strong>Anti-pattern 1 — Pretext tasks with trivial shortcuts.</strong> If the task can be solved via artefacts or borders, the model learns the trick, not useful features, and transfer fails.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 2 — Judging by pretext loss alone.</strong> A low pretext loss can hide that nothing transferable was learned; downstream performance is the real measure.</div>
-        <div class="callout callout-bad"><strong>Anti-pattern 3 — Making the pretext task too easy.</strong> A task with no real difficulty gives the model no reason to learn meaningful structure.</div>`
+        <div class="callout callout-bad"><strong>Anti-pattern 1 — Pretext tasks with trivial shortcuts.</strong> If the task can be solved via artefacts or borders, the model learns the trick, not useful features, and transfer fails. <strong>How:</strong> a model minimises its loss by the <em>easiest</em> available route; if a cheap artefact cue solves the pretext task, the model takes it and never develops the content understanding you actually wanted.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 2 — Judging by pretext loss alone.</strong> A low pretext loss can hide that nothing transferable was learned; downstream performance is the real measure. <strong>How:</strong> pretext loss measures success at the made-up game, which a shortcut can win; only evaluating the features on the real task distinguishes genuine learning from a trick, so pretext loss alone is the wrong yardstick.</div>
+        <div class="callout callout-bad"><strong>Anti-pattern 3 — Making the pretext task too easy.</strong> A task with no real difficulty gives the model no reason to learn meaningful structure. <strong>How:</strong> learning only happens when the task can't be solved trivially; if the pretext task is too easy, the model reaches low loss without being forced to build rich representations, so there's nothing valuable to transfer.</div>`
     }
   }
 ];
