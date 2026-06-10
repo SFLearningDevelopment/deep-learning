@@ -34,6 +34,38 @@
   .module-title { font-size:26px; font-weight:700; color:var(--text); }
   .module-progress { font-size:13px; font-family:'Source Code Pro',monospace; color:var(--text-dimmer); margin-top:10px; }
 
+  /* Refresher primer */
+  .refresh-wrap { max-width:1100px; margin:18px auto 0; padding:0 32px; }
+  .refresh-toggle { width:100%; display:flex; align-items:center; gap:12px; padding:16px 20px; background:var(--blue-light); border:1.5px solid var(--blue-mid); border-left:3px solid var(--blue); border-radius:var(--radius); cursor:pointer; font-family:'Merriweather Sans',sans-serif; font-size:15.5px; font-weight:700; color:var(--blue-dark); text-align:left; transition:background .15s; }
+  .refresh-toggle:hover { background:var(--blue-light); border-color:var(--blue); }
+  .refresh-toggle .rt-icon { font-size:20px; flex-shrink:0; }
+  .refresh-toggle .rt-text { flex:1; }
+  .refresh-toggle .rt-sub { display:block; font-weight:400; font-size:13px; color:var(--text-dim); margin-top:3px; }
+  .refresh-toggle .rt-chev { font-size:13px; font-family:'Source Code Pro',monospace; transition:transform .2s; flex-shrink:0; }
+  .refresh-toggle.open .rt-chev { transform:rotate(180deg); }
+  .refresh-panel { display:none; margin-top:14px; background:var(--bg2); border:1.5px solid var(--border); border-radius:var(--radius); padding:30px 34px; animation:fadeIn .25s ease; }
+  .refresh-panel.open { display:block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:none; } }
+  .refresh-panel h3 { font-size:20px; font-weight:700; color:var(--text); margin:26px 0 10px; }
+  .refresh-panel h3:first-child { margin-top:0; }
+  .refresh-panel h4 { font-size:16px; font-weight:700; color:var(--blue-dark); margin:18px 0 6px; }
+  .refresh-panel p { font-size:16px; color:var(--text-dim); line-height:1.8; margin-bottom:12px; }
+  .refresh-panel p strong { color:var(--text); font-weight:600; }
+  .refresh-panel ul { margin:0 0 14px; padding-left:22px; }
+  .refresh-panel li { font-size:15.5px; color:var(--text-dim); line-height:1.75; margin-bottom:8px; }
+  .refresh-panel li strong { color:var(--text); font-weight:600; }
+  .rf-eg { border-left:3px solid var(--green); background:var(--green-light); padding:12px 16px; border-radius:0 8px 8px 0; margin:8px 0 16px; font-size:14.5px; line-height:1.7; color:var(--text-dim); }
+  .rf-eg .eg-label { font-size:11px; font-family:'Source Code Pro',monospace; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:5px; }
+  .rf-eg strong { color:var(--text); }
+  .rf-table { width:100%; border-collapse:collapse; margin:8px 0 4px; }
+  .rf-table th, .rf-table td { text-align:left; padding:10px 14px; border:1px solid var(--border); font-size:14.5px; vertical-align:top; }
+  .rf-table th { background:var(--bg3); font-weight:700; color:var(--text); }
+  .rf-table td { color:var(--text-dim); line-height:1.65; }
+  .rf-bridge { font-size:16px; color:var(--text-dim); line-height:1.8; margin:6px 0 18px; padding:14px 18px; background:var(--bg3); border-radius:8px; }
+  .rf-bridge strong { color:var(--text); font-weight:600; }
+  .refresh-close { margin-top:20px; padding:10px 20px; background:var(--bg2); color:var(--text-dim); border:1.5px solid var(--border); border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Merriweather Sans',sans-serif; }
+  .refresh-close:hover { background:var(--bg3); }
+
   /* Section pills */
   .section-pills-wrap { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 40px; overflow-x:auto; }
   .section-pills { display:flex; gap:0; }
@@ -200,6 +232,61 @@
   <div class="module-progress" id="moduleProgress">0 of 5 sections complete</div>
 </div>
 
+<div class="refresh-wrap">
+  <button class="refresh-toggle" id="refreshToggle" onclick="toggleRefresh()">
+    <span class="rt-icon">💡</span>
+    <span class="rt-text">Do you want to refresh your knowledge of these more complex models?
+      <span class="rt-sub">A quick primer on the fundamentals before you dive into the methods — open it if the sections feel fast-paced.</span>
+    </span>
+    <span class="rt-chev">▼ OPEN</span>
+  </button>
+
+  <div class="refresh-panel" id="refreshPanel">
+    <h3>More Complex Models — the fundamentals</h3>
+    <p>The standard image network is powerful, but it assumes a fixed-size, single snapshot of fixed structure. The wider world isn't always like that: some data unfolds <strong>over time</strong>, some comes as <strong>sequences of arbitrary length</strong>, and sometimes the goal isn't to <em>recognise</em> something but to <strong>create</strong> something new. The models here extend the basics to handle exactly those cases.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      A single photo of a person mid-stride doesn't tell you if they're walking or stumbling — you need the <em>sequence</em> of frames. A sentence isn't a fixed-size grid — it's a stream of words whose length varies. And "draw a new face that has never existed" isn't recognition at all. Each needs a model built for that shape of problem.
+    </div>
+
+    <h3>When the third dimension is time</h3>
+    <p>An ordinary image filter scans height and width. When data has a meaningful <strong>third axis</strong> — frames of a video over time, or slices of a 3-D scan through depth — the filter can be extended to scan that axis too, capturing how things change across it.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Flipping through a stack of flip-book pages instead of staring at one: only by scanning across the pages (the time axis) do you see the figure <em>move</em>. The cost is real, though — processing a stack is far heavier than glancing at a single page, so this power is worth it only when the extra axis truly carries signal.
+    </div>
+
+    <h3>When data is a sequence</h3>
+    <p>Text, speech, and time series are <strong>sequences</strong>: order matters and length varies. Two broad approaches handle them. One reads the sequence step by step, carrying a running <strong>memory</strong> of what came before. The other lets every element look directly at every other element at once — a mechanism called <strong>attention</strong>.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      Reading a mystery novel, you carry the plot forward in your head as you go (step-by-step memory). But to catch that "the butler" on page 300 refers to someone introduced on page 3, it helps to glance straight back at page 3 rather than relying on a fading memory — that direct glance across any distance is attention.
+    </div>
+
+    <h3>The challenge sequences create</h3>
+    <p>Both approaches have a characteristic cost:</p>
+    <ul>
+      <li><strong>Step-by-step memory fades over long distances.</strong> Information from far back can wash out before it's needed — the difficulty of <em>long-range dependencies</em>.</li>
+      <li><strong>"Everyone looks at everyone" gets expensive fast.</strong> If every element attends to every other, the work grows with the <em>square</em> of the sequence length, so very long inputs become costly.</li>
+    </ul>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      In a 10-person meeting, everyone glancing at everyone is 100 glance-pairs; in a 1,000-person meeting it's a million. Doubling the people <em>quadruples</em> the glances — which is why "let everything see everything" is brilliant for capturing connections but punishing on very long inputs.
+    </div>
+
+    <h3>When the goal is to create, not classify</h3>
+    <p>Most models are <strong>discriminative</strong> — they sort inputs into categories. <strong>Generative</strong> models instead learn what the data <em>looks like</em> well enough to produce convincing new examples of it. That shift changes how you judge success: there's no single right answer to check against.</p>
+    <div class="rf-eg">
+      <div class="eg-label">Example</div>
+      A discriminative model is an art critic who says "this is a Van Gogh." A generative model is a forger who paints a brand-new canvas in Van Gogh's style. Judging the critic is easy (right or wrong); judging the forger needs two questions — does each painting look real, <em>and</em> is there genuine variety, not the same canvas over and over?
+    </div>
+
+    <p class="rf-bridge">These extensions share one theme: take the familiar network and adapt it to a new shape of problem — time, sequence, or creation. The most direct extension of what you already know is the first: keep the image-style filter, but let it scan a <strong>third axis</strong> such as time or depth. That's the <strong>three-dimensional CNN</strong> — a small step from ordinary image filters, with one big caveat about when the extra cost is actually worth it. Close this primer when you're ready, and head to Three-dimensional CNNs.</p>
+
+    <button class="refresh-close" onclick="toggleRefresh()">Close primer ▲</button>
+  </div>
+</div>
+
 <div class="section-pills-wrap">
   <div class="section-pills" id="sectionPills">
     <button class="section-pill active" data-sec="1" onclick="showSection(1)"><span class="pnum">1</span> Three-dimensional CNNs</button>
@@ -311,7 +398,7 @@ document.getElementById('authSignOutBtn')?.addEventListener('click', function() 
 <script src="deep-learning-question-bank.js"></script>
 
 <script>
-const CACHE_VERSION = '2026-06-09-v3';
+const CACHE_VERSION = '2026-06-09-v4';
 const MODULE_ID    = 'dl_m5';
 const CP_COURSE_ID = 'deepLearning2026SFCert';
 const CP_MODULE_IDS = ['dl_m1','dl_m2','dl_m3','dl_m4','dl_m5'];
@@ -557,6 +644,16 @@ function buildSections() {
 }
 
 // ── Navigation ───────────────────────────────────────────────────────────────
+function toggleRefresh() {
+  var t = document.getElementById('refreshToggle');
+  var p = document.getElementById('refreshPanel');
+  if (!t || !p) return;
+  var open = p.classList.toggle('open');
+  t.classList.toggle('open', open);
+  var chev = t.querySelector('.rt-chev');
+  if (chev) chev.textContent = open ? '▲ CLOSE' : '▼ OPEN';
+}
+
 function showSection(n) {
   document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.section-pill').forEach(b => b.classList.remove('active'));
